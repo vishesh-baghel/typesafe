@@ -278,6 +278,18 @@ input[type="range"]:focus-visible::-moz-range-thumb { box-shadow: 0 0 0 3px colo
   font-family: var(--font-mono); font-size: var(--text-xs); color: var(--color-ink-3); letter-spacing: 0.02em;
 }
 .story__src { color: var(--color-ink-2); }
+.story__title a {
+  color: inherit; text-decoration: none;
+  border-bottom: 1.5px solid transparent;
+  transition: color var(--dur-fast) var(--ease-out), border-color var(--dur-fast) var(--ease-out);
+}
+.story__title a:hover { color: var(--color-accent); border-bottom-color: var(--color-accent); }
+.story__hn {
+  color: var(--color-ink-3); text-decoration: none;
+  border-bottom: 1px solid var(--color-rule-2);
+  transition: color var(--dur-fast) var(--ease-out), border-color var(--dur-fast) var(--ease-out);
+}
+.story__hn:hover { color: var(--color-accent); border-bottom-color: var(--color-accent); }
 .pill {
   border: var(--rule) solid var(--color-rule-2); border-radius: var(--radius-sm);
   padding: 1px 5px; font-size: 10px; letter-spacing: 0.05em; text-transform: uppercase;
@@ -453,7 +465,7 @@ td.n { font-family: var(--font-mono); font-variant-numeric: tabular-nums; color:
 <header class="bar">
   <div class="wrap bar__in">
     <span class="bar__mark">HN Slider Ranker</span>
-    <span class="mono bar__chip">Sample data</span>
+    <span class="mono bar__chip">Sample scores</span>
     <div class="bar__right">
       <button class="btn btn--ghost" id="kbdBtn" aria-haspopup="dialog">
         <span class="mono" style="letter-spacing:.04em">⌘K</span>
@@ -466,7 +478,7 @@ td.n { font-family: var(--font-mono); font-variant-numeric: tabular-nums; color:
 <!-- ─── receipt strip ──────────────────────────────────────────────── -->
 <div class="strip">
   <div class="wrap strip__in">
-    <span class="meter"><span class="meter__k">Jev calls</span><span class="meter__v num" id="callCount">12</span></span>
+    <span class="meter"><span class="meter__k">Jev calls</span><span class="meter__v num" id="callCount">14</span></span>
     <span class="meter"><span class="meter__k">Re-ranks</span><span class="meter__v meter__v--live num" id="rerankCount">0</span></span>
     <p class="strip__note">Scored once. <b>Every re-rank after that is free and offline.</b></p>
   </div>
@@ -489,11 +501,11 @@ td.n { font-family: var(--font-mono); font-variant-numeric: tabular-nums; color:
     <div class="listwrap">
       <div class="panel__head">
         <span class="mono">Ranked by composite weight</span>
-        <span class="mono" id="sortNote">—</span>
+        <span class="mono" id="sortNote"></span>
       </div>
       <ul class="list" id="list"></ul>
       <p class="emptynote" id="emptyNote" style="display:none">
-        Every weight is zero, so the composite carries no signal — showing the original
+        Every weight is zero, so the composite carries no signal. Showing the original
         front-page order instead of an arbitrary permutation.
       </p>
     </div>
@@ -501,7 +513,7 @@ td.n { font-family: var(--font-mono); font-variant-numeric: tabular-nums; color:
 
   <div class="wrap colophon">
     <span>jev-latest · 6 Score + 2 Noul per story</span>
-    <span>Twelve invented stories, hand-authored scores — not live model output</span>
+    <span>Real Hacker News front page. Scores are hand-authored samples, not live model output.</span>
   </div>
 </main>
 
@@ -514,109 +526,96 @@ td.n { font-family: var(--font-mono); font-variant-numeric: tabular-nums; color:
     </div>
     <div class="sheet__body">
       <div class="blk">
-        <h2 id="howTitle">The ranking algorithm is six sliders</h2>
+        <h2 id="howTitle">How a story becomes six numbers</h2>
         <p class="lede">
-          An AI model scores each front-page story once and returns calibrated numbers.
-          The weighting lives in the page, so <strong>re-ranking costs nothing and happens
-          offline</strong> — drag a slider with your network disconnected and the list still
-          reorders. That is the part a text-generating model cannot do: there are no numbers
-          to re-weight.
+          Jev is a System One model. It reads natural language the way an LLM does, but
+          instead of writing a reply it returns <strong>typed answers with calibrated
+          probabilities</strong>. Each story here was sent once with eight questions
+          attached. What came back was numbers, and that is the only reason these sliders
+          can work with the network switched off.
         </p>
       </div>
 
       <div class="blk">
-        <span class="mono blk__k">Pipeline</span>
-        <div class="steps">
-          <div class="step"><span class="step__n">01</span><div>
-            <h3>Ingest</h3>
-            <p>Top 30 stories plus each one's five top comments. Comments are what make
-            <code>drama</code> and <code>ai_slop</code> evidence rather than title-pattern guessing.</p>
-          </div></div>
-          <div class="step"><span class="step__n">02</span><div>
-            <h3>Score, hourly</h3>
-            <p>One call per story on a schedule — never on a visitor request. A traffic spike
-            and an empty room cost exactly the same.</p>
-          </div></div>
-          <div class="step"><span class="step__n">03</span><div>
-            <h3>Normalise</h3>
-            <p>Each score divides by <code>levels − 1</code> into 0–1. The mean confidence across
-            six answers becomes an evidence strength the card can show honestly.</p>
-          </div></div>
-          <div class="step"><span class="step__n">04</span><div>
-            <h3>Weight, in your browser</h3>
-            <p>A pure function over data already delivered. No request is made.</p>
-            <p class="formula">composite = Σ (w<sub>d</sub> ÷ 100) × score<sub>d</sub></p>
-          </div></div>
-        </div>
-      </div>
-
-      <div class="blk">
-        <span class="mono blk__k">One request, eight judgments</span>
-        <p>Questions run in parallel inside a single call, so the eighth costs almost nothing
-        over the first.</p>
+        <span class="mono blk__k">Score: the six sliders</span>
+        <p>
+          A Score question defines ordered levels and asks which one fits. Jev answers with
+          a probability for every level, plus the probability weighted position between
+          them. Each of the six dimensions on the left is one Score question whose five
+          levels describe concrete situations rather than grading on adjectives.
+        </p>
         <div class="code">
-          <div class="code__bar"><span class="mono">request · one story</span><span class="mono">~400 tokens</span></div>
+          <div class="code__bar"><span class="mono">one of the six questions</span></div>
           <pre><code>{
-  <span class="tok-k">"model"</span>: <span class="tok-s">"jev-latest"</span>,
-  <span class="tok-k">"state"</span>: {
-    <span class="tok-k">"story"</span>: { <span class="tok-k">"title"</span>: <span class="tok-s">"…"</span>, <span class="tok-k">"source"</span>: <span class="tok-s">"…"</span>,
-                <span class="tok-k">"points"</span>: <span class="tok-n">412</span>, <span class="tok-k">"comment_count"</span>: <span class="tok-n">189</span> },
-    <span class="tok-k">"top_comments"</span>: [ <span class="tok-p">/* 5 cleaned comments */</span> ]
-  },
-  <span class="tok-k">"questions"</span>: {
-    <span class="tok-k">"technical_depth"</span>: {
-      <span class="tok-k">"type"</span>: <span class="tok-s">"score"</span>,
-      <span class="tok-k">"instructions"</span>: <span class="tok-s">"How much substance is here for a"</span>
-                      <span class="tok-s">"working engineer?"</span>,
-      <span class="tok-k">"criteria"</span>: [ <span class="tok-p">/* 5 concrete levels */</span> ]
-    },
-    <span class="tok-p">/* drama · practical_utility · ai_slop  */</span>
-    <span class="tok-p">/* novelty · career_relevance           */</span>
-    <span class="tok-k">"has_original_research"</span>: { <span class="tok-k">"type"</span>: <span class="tok-s">"noul"</span> },
-    <span class="tok-k">"is_rage_bait"</span>:          { <span class="tok-k">"type"</span>: <span class="tok-s">"noul"</span> }
-  }
+  <span class="tok-k">"type"</span>: <span class="tok-s">"score"</span>,
+  <span class="tok-k">"instructions"</span>: <span class="tok-s">"How much substance is here for a working engineer?"</span>,
+  <span class="tok-k">"criteria"</span>: [
+    <span class="tok-s">"A product page or announcement with no implementation detail"</span>,
+    <span class="tok-s">"Describes what was built, but not how"</span>,
+    <span class="tok-s">"Explains the approach at a level you could argue with"</span>,
+    <span class="tok-s">"Shows the mechanism: code, measurements, tradeoffs"</span>,
+    <span class="tok-s">"Teaches something an experienced engineer did not know"</span>
+  ]
 }</code></pre>
         </div>
+        <p>
+          The answer is a position from 0 to 4 along those levels. This page divides by 4
+          to get the values printed beside each bar. Nothing is parsed out of prose,
+          because there is no prose.
+        </p>
       </div>
 
       <div class="blk">
-        <span class="mono blk__k">Worth poking</span>
-        <div class="steps">
-          <div class="step"><span class="step__n">→</span><div>
-            <h3>Pull AI slop to −100</h3>
-            <p>Negative weights penalise rather than ignore. The bottom of the list becomes the top.</p>
-          </div></div>
-          <div class="step"><span class="step__n">→</span><div>
-            <h3>Watch the two counters diverge</h3>
-            <p>Jev calls freeze. Re-ranks climb without limit.</p>
-          </div></div>
-          <div class="step"><span class="step__n">→</span><div>
-            <h3>Open a raw response</h3>
-            <p>Every card shows its verbatim payload — probabilities, confidence, the lot.</p>
-          </div></div>
-          <div class="step"><span class="step__n">→</span><div>
-            <h3>Zero every weight</h3>
-            <p>The list says so out loud instead of presenting a meaningless order as a ranking.
-            Try it from <kbd>⌘K</kbd>.</p>
-          </div></div>
-        </div>
+        <span class="mono blk__k">Noul: the two pills</span>
+        <p>
+          A Noul question asks whether a statement holds and returns the probability that
+          the answer is yes. It has no separate confidence value, because the probability
+          already is the signal. A Noul near 0.5 means Jev finds yes and no about equally
+          likely, not that the thing is half true.
+        </p>
+        <p>
+          The <span class="pill pill--flag">original research</span> and
+          <span class="pill pill--warn">rage bait</span> pills are the two Nouls. They stay
+          out of the weighted ranking on purpose: they are not degrees along a spectrum,
+          they are claims that either hold or do not, so a slider would be the wrong
+          control for them.
+        </p>
       </div>
 
       <div class="blk">
-        <span class="mono blk__k">Targets, not measurements</span>
-        <p>Nothing here has been measured — these are the thresholds the real build gets tested against.</p>
-        <div class="spec-wrap">
-          <table>
-            <thead><tr><th scope="col">Budget</th><th scope="col">Target</th></tr></thead>
-            <tbody>
-              <tr><td>Calls per refresh</td><td class="n">30 · one per story</td></tr>
-              <tr><td>Judgments per refresh</td><td class="n">240</td></tr>
-              <tr><td>Refresh cadence</td><td class="n">hourly</td></tr>
-              <tr><td>Re-rank compute</td><td class="n">&lt; 1 ms</td></tr>
-              <tr><td>Dimension independence</td><td class="n">r &lt; 0.8</td></tr>
-            </tbody>
-          </table>
-        </div>
+        <span class="mono blk__k">Confidence, and when to distrust a number</span>
+        <p>
+          Every Score answer carries a confidence derived from how concentrated its
+          distribution is. A flat spread means Jev could not separate the levels, which
+          usually means the evidence was not in the state to begin with.
+        </p>
+        <p>
+          Find <em>Comparison of Malloc() Algorithms</em> in the list. It has zero comments,
+          so nothing in what Jev was given can support a judgment about drama. The
+          probability spreads and the confidence falls. This page averages confidence
+          across the six answers and marks anything under 0.40 as
+          <span class="pill pill--thin">thin evidence</span> rather than quietly presenting
+          a guess as a measurement.
+        </p>
+      </div>
+
+      <div class="blk">
+        <span class="mono blk__k">Why this makes sliders possible</span>
+        <p>
+          All eight questions travel in one request and are evaluated independently, so the
+          eighth costs almost nothing over the first. No question sees another question's
+          answer.
+        </p>
+        <p>
+          Because the result is numbers rather than an opinion, the ranking policy never has
+          to live inside the model. It lives here:
+        </p>
+        <p class="formula">composite = &#931; (w<sub>d</sub> &#247; 100) &#215; score<sub>d</sub></p>
+        <p>
+          Moving a slider changes one <code>w</code>. Nothing is re-read, re-prompted or
+          re-sent. A text model cannot offer this, because a paragraph of reasoning has no
+          coefficients you can turn.
+        </p>
       </div>
     </div>
   </div>
@@ -652,44 +651,50 @@ td.n { font-family: var(--font-mono); font-variant-numeric: tabular-nums; color:
     "Career mode": { tech: 10, drama: 20, util: 40, slop: -30, nov: 0, career: 100 }
   };
 
-  // Sample data — hand-authored, shaped exactly like the real payload.
+  // Real HN front page; scores and confidences are hand-authored samples.
   const STORIES = [
-    { id: 1, t: "Writing a toy JIT compiler for a stack VM in 900 lines", src: "blog.hexbyte.dev", pts: 412, c: 189, h: 7.2,
-      s: { tech: .92, drama: .18, util: .44, slop: .04, nov: .58, career: .22 },
-      cf: { tech: .88, drama: .71, util: .64, slop: .93, nov: .72, career: .69 }, f: { research: .91, rage: .03 } },
-    { id: 2, t: "Our AI agent platform now writes 80% of our production code", src: "eng.northwind-labs.com", pts: 287, c: 341, h: 5.1,
-      s: { tech: .22, drama: .88, util: .26, slop: .86, nov: .21, career: .54 },
-      cf: { tech: .74, drama: .89, util: .58, slop: .84, nov: .66, career: .61 }, f: { research: .12, rage: .74 } },
-    { id: 3, t: "Postgres gets incremental view maintenance", src: "postgresql.org", pts: 934, c: 212, h: 11.4,
-      s: { tech: .81, drama: .34, util: .93, slop: .03, nov: .77, career: .41 },
-      cf: { tech: .86, drama: .62, util: .91, slop: .94, nov: .79, career: .58 }, f: { research: .34, rage: .04 } },
-    { id: 4, t: "Ask HN: Who is hiring? (September 2026)", src: "Ask HN", pts: 156, c: 872, h: 14.8,
-      s: { tech: .08, drama: .22, util: .71, slop: .05, nov: .11, career: .98 },
-      cf: { tech: .81, drama: .55, util: .68, slop: .88, nov: .76, career: .96 }, f: { research: .02, rage: .02 } },
-    { id: 5, t: "I was laid off after 11 years. Here is what the severance actually looked like", src: "notes.mkrieger.io", pts: 621, c: 408, h: 9.3,
-      s: { tech: .06, drama: .79, util: .38, slop: .11, nov: .33, career: .89 },
-      cf: { tech: .84, drama: .81, util: .49, slop: .79, nov: .54, career: .87 }, f: { research: .83, rage: .31 } },
-    { id: 6, t: "Show HN: A terminal file manager that indexes with ripgrep", src: "github.io", pts: 344, c: 97, h: 4.6,
-      s: { tech: .64, drama: .12, util: .88, slop: .06, nov: .46, career: .14 },
-      cf: { tech: .77, drama: .58, util: .85, slop: .90, nov: .61, career: .72 }, f: { research: .88, rage: .02 } },
-    { id: 7, t: "The case against microservices, again", src: "sallow.substack.com", pts: 478, c: 523, h: 8.0,
-      s: { tech: .48, drama: .84, util: .41, slop: .29, nov: .12, career: .36 },
-      cf: { tech: .66, drama: .87, util: .57, slop: .71, nov: .74, career: .55 }, f: { research: .18, rage: .58 } },
-    { id: 8, t: "Measuring tail latency in Rust async runtimes: a 40-page report", src: "tvix-research.org", pts: 289, c: 64, h: 6.7,
-      s: { tech: .95, drama: .27, util: .62, slop: .02, nov: .69, career: .27 },
-      cf: { tech: .93, drama: .52, util: .70, slop: .95, nov: .77, career: .63 }, f: { research: .96, rage: .02 } },
-    { id: 9, t: "10 AI tools that will replace your entire engineering team", src: "growthstack.media", pts: 71, c: 218, h: 3.2,
-      s: { tech: .06, drama: .61, util: .09, slop: .97, nov: .04, career: .44 },
-      cf: { tech: .89, drama: .68, util: .83, slop: .95, nov: .86, career: .52 }, f: { research: .02, rage: .91 } },
-    { id: 10, t: "A formal proof that the halting problem bounds static analysis in practice", src: "arxiv-mirror.dev", pts: 203, c: 41, h: 12.1,
-      s: { tech: .89, drama: .31, util: .18, slop: .03, nov: .84, career: .09 },
-      cf: { tech: .90, drama: .44, util: .66, slop: .92, nov: .81, career: .74 }, f: { research: .93, rage: .03 } },
-    { id: 11, t: "Why we moved off Kubernetes and saved $400k a year", src: "infra.parsley.sh", pts: 812, c: 467, h: 10.5,
-      s: { tech: .57, drama: .72, util: .79, slop: .22, nov: .38, career: .52 },
-      cf: { tech: .71, drama: .83, util: .78, slop: .73, nov: .59, career: .64 }, f: { research: .71, rage: .34 } },
-    { id: 12, t: "A major cloud provider deprecated our API with 30 days notice", src: "status.driftwood.co", pts: 549, c: 296, h: 2.4,
-      s: { tech: .19, drama: .91, util: .31, slop: .18, nov: .08, career: .33 },
-      cf: { tech: .38, drama: .41, util: .33, slop: .36, nov: .29, career: .31 }, f: { research: .09, rage: .67 } }
+    { id: 49735930, t: "Keys Not Included: recovering the signing keys for US driver's license barcodes", url: "https://ryan.science/blog/keys-not-included", src: "ryan.science", pts: 107, c: 35, h: 3.3,
+      s: { tech: 0.91, drama: 0.38, util: 0.24, slop: 0.02, nov: 0.88, career: 0.11 },
+      cf: { tech: 0.87, drama: 0.49, util: 0.63, slop: 0.94, nov: 0.82, career: 0.71 }, f: { research: 0.95, rage: 0.08 } },
+    { id: 49724881, t: "Nvidia announces native GPU programming in Rust", url: "https://developer.nvidia.com/blog/introducing-cuda-rust-two-tracks-for-writing-gpu-kernels/", src: "developer.nvidia.com", pts: 527, c: 192, h: 19.1,
+      s: { tech: 0.74, drama: 0.52, util: 0.81, slop: 0.08, nov: 0.79, career: 0.47 },
+      cf: { tech: 0.79, drama: 0.84, util: 0.86, slop: 0.88, nov: 0.77, career: 0.68 }, f: { research: 0.31, rage: 0.09 } },
+    { id: 49731285, t: "Training a 4B model to produce 81% faster query plans than Postgres", url: "https://rohanbansal.com/qorl", src: "rohanbansal.com", pts: 488, c: 97, h: 11.5,
+      s: { tech: 0.89, drama: 0.44, util: 0.58, slop: 0.21, nov: 0.86, career: 0.29 },
+      cf: { tech: 0.88, drama: 0.72, util: 0.69, slop: 0.74, nov: 0.83, career: 0.61 }, f: { research: 0.93, rage: 0.06 } },
+    { id: 49715318, t: "Comparison of Malloc() Algorithms", url: "https://egbert.net/blog/articles/comparison-of-arena-architecture-in-malloc.html", src: "egbert.net", pts: 19, c: 0, h: 37.5,
+      s: { tech: 0.84, drama: 0.05, util: 0.49, slop: 0.02, nov: 0.34, career: 0.08 },
+      cf: { tech: 0.58, drama: 0.18, util: 0.34, slop: 0.52, nov: 0.31, career: 0.39 }, f: { research: 0.66, rage: 0.02 } },
+    { id: 49732270, t: "Xiaomi Mimo 2.6 live post-training dashboard", url: "https://mimo.xiaomi.com/rl/", src: "mimo.xiaomi.com", pts: 380, c: 93, h: 10.2,
+      s: { tech: 0.68, drama: 0.47, util: 0.41, slop: 0.44, nov: 0.72, career: 0.26 },
+      cf: { tech: 0.66, drama: 0.71, util: 0.58, slop: 0.63, nov: 0.7, career: 0.57 }, f: { research: 0.58, rage: 0.14 } },
+    { id: 49732513, t: "Backups Aren't Simple", url: "https://filipovski.net/2026/09/16/backups-arent-simple.html", src: "filipovski.net", pts: 176, c: 90, h: 9.9,
+      s: { tech: 0.56, drama: 0.41, util: 0.87, slop: 0.06, nov: 0.28, career: 0.22 },
+      cf: { tech: 0.74, drama: 0.7, util: 0.85, slop: 0.9, nov: 0.66, career: 0.63 }, f: { research: 0.49, rage: 0.11 } },
+    { id: 49700153, t: "Developing provably correct Rust code with Verus", url: "https://www.amazon.science/blog/developing-provably-correct-rust-code-with-verus", src: "amazon.science", pts: 80, c: 10, h: 61.4,
+      s: { tech: 0.93, drama: 0.14, util: 0.43, slop: 0.03, nov: 0.69, career: 0.18 },
+      cf: { tech: 0.9, drama: 0.37, util: 0.61, slop: 0.93, nov: 0.76, career: 0.65 }, f: { research: 0.88, rage: 0.02 } },
+    { id: 49729000, t: "Small programming tricks", url: "https://will-keleher.com/posts/small-programming-tricks-matter/", src: "will-keleher.com", pts: 478, c: 206, h: 14.4,
+      s: { tech: 0.52, drama: 0.31, util: 0.79, slop: 0.09, nov: 0.33, career: 0.21 },
+      cf: { tech: 0.69, drama: 0.78, util: 0.83, slop: 0.87, nov: 0.64, career: 0.62 }, f: { research: 0.42, rage: 0.07 } },
+    { id: 49732931, t: "Breaking the 1.58-bit Barrier for Ternary LLMs", url: "https://arxiv.org/abs/2609.16338", src: "arxiv.org", pts: 182, c: 25, h: 9.3,
+      s: { tech: 0.96, drama: 0.22, util: 0.36, slop: 0.11, nov: 0.91, career: 0.16 },
+      cf: { tech: 0.94, drama: 0.46, util: 0.64, slop: 0.81, nov: 0.88, career: 0.7 }, f: { research: 0.97, rage: 0.03 } },
+    { id: 49721291, t: "A 32-year-old bug walks into a Telnet server", url: "https://labs.watchtowr.com/a-32-year-old-bug-walks-into-a-telnet-server-gnu-inetutils-telnetd-cve-2026-32746/", src: "labs.watchtowr.com", pts: 34, c: 10, h: 28.3,
+      s: { tech: 0.81, drama: 0.36, util: 0.29, slop: 0.04, nov: 0.74, career: 0.13 },
+      cf: { tech: 0.83, drama: 0.41, util: 0.62, slop: 0.92, nov: 0.79, career: 0.68 }, f: { research: 0.92, rage: 0.17 } },
+    { id: 49734929, t: "The Return of Sail Power: Cargo Ships Are Turning Back to the Wind", url: "https://gcaptain.com/the-return-of-sail-power-cargo-ships-are-turning-back-to-the-wind/", src: "gcaptain.com", pts: 64, c: 25, h: 5.9,
+      s: { tech: 0.34, drama: 0.29, util: 0.17, slop: 0.12, nov: 0.61, career: 0.06 },
+      cf: { tech: 0.71, drama: 0.52, util: 0.74, slop: 0.83, nov: 0.67, career: 0.8 }, f: { research: 0.38, rage: 0.09 } },
+    { id: 49719596, t: "The engineering behind the US Strategic Petroleum Reserve", url: "https://johnjwang.com/post/2026/09/15/engineering-behind-us-strategic-petroleum-reserve", src: "johnjwang.com", pts: 167, c: 67, h: 32.1,
+      s: { tech: 0.58, drama: 0.24, util: 0.13, slop: 0.05, nov: 0.67, career: 0.07 },
+      cf: { tech: 0.72, drama: 0.63, util: 0.79, slop: 0.91, nov: 0.73, career: 0.78 }, f: { research: 0.71, rage: 0.05 } },
+    { id: 49734264, t: "OpenSpec – A lightweight and configurable AI spec framework", url: "https://openspec.dev/", src: "openspec.dev", pts: 120, c: 47, h: 7.2,
+      s: { tech: 0.44, drama: 0.38, util: 0.64, slop: 0.58, nov: 0.36, career: 0.19 },
+      cf: { tech: 0.61, drama: 0.66, util: 0.71, slop: 0.69, nov: 0.58, career: 0.6 }, f: { research: 0.54, rage: 0.21 } },
+    { id: 49719249, t: "AWS says it can't restore some data from mideast facilities struck by Iran", url: "https://www.wsj.com/world/middle-east/aws-says-it-cant-restore-some-data-from-mideast-facilities-struck-by-iran-ddcb7e5d", src: "wsj.com", pts: 334, c: 264, h: 32.6,
+      s: { tech: 0.29, drama: 0.89, util: 0.34, slop: 0.07, nov: 0.43, career: 0.38 },
+      cf: { tech: 0.68, drama: 0.91, util: 0.57, slop: 0.86, nov: 0.62, career: 0.66 }, f: { research: 0.22, rage: 0.52 } }
   ];
 
   const $ = (id) => document.getElementById(id);
@@ -781,11 +786,11 @@ td.n { font-family: var(--font-mono); font-variant-numeric: tabular-nums; color:
         <li class="story" data-sid="${st.id}">
           <span class="story__rank num" ${moved ? `data-moved="${moved}"` : ""}>${String(i + 1).padStart(2, "0")}</span>
           <div>
-            <h3 class="story__title">${st.t}</h3>
+            <h3 class="story__title"><a href="${st.url}" target="_blank" rel="noopener noreferrer">${st.t}</a></h3>
             <div class="story__meta">
               <span class="story__src">${st.src}</span>
               <span>${st.pts} pts</span>
-              <span>${st.c} comments</span>
+              <a class="story__hn" href="https://news.ycombinator.com/item?id=${st.id}" target="_blank" rel="noopener noreferrer">${st.c} comments</a>
               <span>${st.h}h</span>
               ${st.f.research > .7 ? '<span class="pill pill--flag">original research</span>' : ""}
               ${st.f.rage > .6 ? '<span class="pill pill--warn">rage bait</span>' : ""}
