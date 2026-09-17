@@ -206,6 +206,7 @@ export function Ranker({
         <div className="wrap bar__in">
           <span className="bar__mark">Upweight</span>
           <span className="bar__tag">The Hacker News front page, weighted your way.</span>
+          <Receipt jevCalls={jevCalls} rerankCount={rerankCount} />
           <div className="bar__right">
             <button
               type="button"
@@ -226,8 +227,6 @@ export function Ranker({
           </div>
         </div>
       </header>
-
-      <Receipt jevCalls={jevCalls} rerankCount={rerankCount} />
 
       <main className="main">
         <div className="wrap instrument">

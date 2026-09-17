@@ -164,25 +164,20 @@ p { margin: 0; }
 }
 
 /* ─── receipt strip — the argument, kept in view ──────────────────────── */
-.strip {
-  border-bottom: var(--rule) solid var(--color-rule);
-  background: var(--color-graphite); color: var(--color-on-graphite-2);
-}
-.strip__in {
-  display: flex; align-items: center; flex-wrap: wrap;
-  gap: var(--space-xs) var(--space-lg); padding-block: var(--space-sm);
-}
-.meter { display: flex; align-items: baseline; gap: var(--space-xs); }
+/* The receipt lives in the bar now. A full-bleed strip stranded the two numbers at
+   opposite ends of a wide viewport, and the whole point is seeing them side by side. */
+.bar__meters { display: none; align-items: baseline; gap: var(--space-md); margin-left: var(--space-md); }
+
+.meter { display: flex; align-items: baseline; gap: var(--space-2xs); white-space: nowrap; }
 .meter__k { font-family: var(--font-mono); font-size: var(--text-xs); letter-spacing: 0.06em; text-transform: uppercase; color: var(--color-on-graphite-3); }
 .meter__v {
-  font-family: var(--font-display); font-weight: 600; font-size: var(--text-xl);
-  line-height: 1; color: var(--color-on-graphite);
+  font-family: var(--font-display); font-weight: 600; font-size: var(--text-base);
+  line-height: 1; color: var(--color-ink);
   font-variant-numeric: tabular-nums; letter-spacing: -0.02em;
 }
-.meter__v--live { color: var(--color-graphite-accent); transition: transform var(--dur-fast) var(--ease-out); }
+.meter__v--live { color: var(--color-accent); transition: transform var(--dur-fast) var(--ease-out); }
 .meter__v--live.is-tick { transform: translateY(-2px); }
-.strip__note { font-size: var(--text-sm); color: var(--color-on-graphite-3); margin-left: auto; }
-.strip__note b { color: var(--color-on-graphite-2); font-weight: 500; }
+
 
 /* ─── instrument ──────────────────────────────────────────────────────── */
 .main { padding-block: var(--space-lg) var(--space-2xl); }
@@ -368,7 +363,7 @@ input[type="range"]:focus-visible::-moz-range-thumb { box-shadow: 0 0 0 3px colo
 @keyframes fade { from { opacity: 0 } to { opacity: 1 } }
 
 .sheet {
-  max-width: 58rem; margin-inline: auto; background: var(--color-paper);
+  max-width: 44rem; margin-inline: auto; background: var(--color-paper);
   border: var(--rule) solid var(--color-rule-2); border-radius: var(--radius-lg);
   box-shadow: var(--shadow-overlay); overflow: hidden;
 }
@@ -382,7 +377,7 @@ input[type="range"]:focus-visible::-moz-range-thumb { box-shadow: 0 0 0 3px colo
 .sheet__body { padding: var(--space-lg) var(--space-md) var(--space-xl); display: grid; gap: var(--space-xl); }
 .sheet h2 { font-size: var(--text-2xl); font-weight: 600; }
 .sheet h3 { font-size: var(--text-base); font-weight: 600; letter-spacing: -0.015em; }
-.sheet p { max-width: var(--measure); font-size: var(--text-sm); }
+.sheet p { max-width: 72ch; font-size: var(--text-sm); }
 .sheet code { font-family: var(--font-mono); font-size: 0.92em; color: var(--color-accent); }
 
 .lede { font-size: var(--text-lg); color: var(--color-ink-2); max-width: var(--measure); }
@@ -439,12 +434,16 @@ td.n { font-family: var(--font-mono); font-variant-numeric: tabular-nums; color:
 }
 
 /* ─── responsive ──────────────────────────────────────────────────────── */
+@media (min-width: 30rem) {
+  .bar__meters { display: flex; }
+}
 @media (min-width: 40rem) {
   .dims { grid-template-columns: repeat(3, minmax(0, 1fr)); }
   .sheet__body { padding-inline: var(--space-xl); }
 }
 @media (min-width: 64rem) {
   .bar__tag { display: inline; }
+  .bar__meters { display: flex; }
   .instrument { grid-template-columns: 19rem minmax(0, 1fr); gap: var(--space-xl); }
   .rail { position: sticky; top: 70px; }
 }
