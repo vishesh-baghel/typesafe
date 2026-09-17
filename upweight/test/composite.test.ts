@@ -12,6 +12,7 @@ import {
   rank,
   type Weights,
 } from '../lib/composite';
+import { relativeAge } from '../lib/format';
 import { DIM_KEYS, type Dimension, type ScoredStory } from '../lib/types';
 
 const dim = (value: number, available = true): Dimension => ({
@@ -175,5 +176,30 @@ describe('helpers', () => {
 
   it('gives every dimension a unique short code', () => {
     expect(new Set(DIMS.map((d) => d.code)).size).toBe(DIMS.length);
+  });
+});
+
+describe('relativeAge', () => {
+  it('reads as days past a day, because 110h is arithmetic not information', () => {
+    expect(relativeAge(110)).toBe('4d ago');
+    expect(relativeAge(24)).toBe('1d ago');
+    expect(relativeAge(47.9)).toBe('1d ago');
+    expect(relativeAge(48)).toBe('2d ago');
+  });
+
+  it('keeps hours inside the first day', () => {
+    expect(relativeAge(1)).toBe('1h ago');
+    expect(relativeAge(7.2)).toBe('7h ago');
+    expect(relativeAge(23.4)).toBe('23h ago');
+  });
+
+  it('uses minutes under an hour', () => {
+    expect(relativeAge(0.5)).toBe('30m ago');
+    expect(relativeAge(0.0001)).toBe('just now');
+  });
+
+  it('does not throw on junk', () => {
+    expect(relativeAge(NaN)).toBe('just now');
+    expect(relativeAge(-5)).toBe('just now');
   });
 });

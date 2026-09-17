@@ -75,7 +75,7 @@
   --color-neg: oklch(54% 0.18 27);
   --color-focus: oklch(52% 0.20 256);
   --color-tok-num: oklch(78% 0.11 90);
-  --color-scrim: oklch(20% 0.02 258 / 0.42);
+  --color-scrim: oklch(18% 0.02 258 / 0.66);
   --shadow-lift: 0 1px 2px oklch(24% 0.02 258 / 0.06);
   --shadow-overlay: 0 16px 48px oklch(20% 0.02 258 / 0.18);
 }
@@ -361,14 +361,14 @@ input[type="range"]:focus-visible::-moz-range-thumb { box-shadow: 0 0 0 3px colo
 /* ─── overlays · modal + palette ──────────────────────────────────────── */
 .backdrop {
   position: fixed; inset: 0; z-index: 90; background: var(--color-scrim);
-  display: none; overflow-y: auto;
+  display: none; overflow-y: auto; scrollbar-gutter: stable both-edges;
   padding: clamp(0.75rem, 6vh, 4rem) var(--space-md) var(--space-xl);
 }
 .backdrop[data-open="true"] { display: block; animation: fade var(--dur-fast) var(--ease-out); }
 @keyframes fade { from { opacity: 0 } to { opacity: 1 } }
 
 .sheet {
-  max-width: 46rem; margin-inline: auto; background: var(--color-paper);
+  max-width: 58rem; margin-inline: auto; background: var(--color-paper);
   border: var(--rule) solid var(--color-rule-2); border-radius: var(--radius-lg);
   box-shadow: var(--shadow-overlay); overflow: hidden;
 }
@@ -402,7 +402,8 @@ input[type="range"]:focus-visible::-moz-range-thumb { box-shadow: 0 0 0 3px colo
   padding: var(--space-xs) var(--space-md);
   border-bottom: var(--rule) solid var(--color-graphite-rule); color: var(--color-on-graphite-3);
 }
-.code pre { overflow-x: auto; white-space: pre; }
+.code pre { overflow-x: auto; white-space: pre; max-width: 100%; }
+.code { max-width: 100%; }
 
 .formula {
   font-family: var(--font-mono); font-size: var(--text-sm); color: var(--color-accent);

@@ -1,6 +1,7 @@
 'use client';
 
 import { DIMS, type Weights } from '@/lib/composite';
+import { exactAge, relativeAge } from '@/lib/format';
 import type { ScoredStory } from '@/lib/types';
 
 interface Props {
@@ -46,7 +47,7 @@ export function StoryCard({
           >
             {story.commentCount} comments
           </a>
-          <span>{story.ageHours}h</span>
+          <span title={exactAge(story.ageHours)}>{relativeAge(story.ageHours)}</span>
           {story.flags && story.flags.hasOriginalResearch > 0.7 && (
             <span className="pill pill--flag">original research</span>
           )}

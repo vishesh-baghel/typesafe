@@ -66,8 +66,7 @@ export function HowModal({ open, onClose }: { open: boolean; onClose: () => void
               <pre>
                 <code>{`{
   "type": "score",
-  "instructions": "How much substance is there in \`article_text\`
-                   for a working engineer?",
+  "instructions": "How much substance is there in \`article_text\` for a working engineer?",
   "criteria": [
     "A product page or announcement with no implementation detail",
     "Describes what was built, but not how",
