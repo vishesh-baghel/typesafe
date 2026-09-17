@@ -21,7 +21,10 @@ async function main() {
   const state = buildState(story);
   console.log(`\n  ${story.title}`);
   console.log(`  ${story.source} | ${story.points} pts | ${story.commentCount} comments | ${story.ageHours}h`);
-  console.log(`  ${story.topComments.length} comments captured, ~${estimateTokens(state)} tokens of state\n`);
+  const replies = story.threads.reduce((n, t) => n + t.replies.length, 0);
+  console.log(
+    `  ${story.threads.length} threads + ${replies} replies captured, ~${estimateTokens(state)} tokens of state\n`,
+  );
 
   const started = Date.now();
   const scored = await scoreStory(story);

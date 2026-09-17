@@ -40,7 +40,7 @@ export function buildState(story: RawStory) {
       body: story.body,
     },
     article_text: story.articleText,
-    top_comments: story.topComments,
+    discussion: story.threads,
   };
 
   if (!base.article_text) return base;
@@ -131,7 +131,7 @@ export async function scoreStory(story: RawStory): Promise<ScoredStory> {
     ? answered.reduce((sum, k) => sum + scores[k].confidence, 0) / answered.length
     : 0;
 
-  const { body: _body, topComments: _comments, articleText, ...rest } = story;
+  const { body: _body, threads: _threads, articleText, ...rest } = story;
 
   return {
     ...rest,

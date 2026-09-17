@@ -1,10 +1,24 @@
 import { cleanComment, sourceOf } from './normalize';
-import type { RawStory } from './types';
+import type { CommentThread, RawStory } from './types';
 
 const API = 'https://hacker-news.firebaseio.com/v0';
 
 export const STORY_COUNT = 30;
-export const COMMENTS_PER_STORY = 5;
+
+/**
+ * Comment sampling, tuned for judging conflict.
+ *
+ * The first version took the top 5 `kids` flat. That sampled the calmest part of every
+ * discussion: HN orders kids by rank, and a highly ranked HN comment is by definition
+ * one people agreed with. Measured result was a drama column with max 0.47 and mean
+ * 0.238 across a whole front page, with levels 3 and 4 never firing at all.
+ *
+ * So: take more top-level comments for breadth, then go deep on the ones with the most
+ * replies, because reply count is where an argument shows up before its content does.
+ */
+export const TOP_LEVEL_COMMENTS = 8;
+export const DEEP_THREADS = 3;
+export const REPLIES_PER_THREAD = 4;
 
 /** Raw shape of an HN Firebase item. Everything is optional; the API guarantees little. */
 interface HnItem {
@@ -80,10 +94,7 @@ export async function fetchFrontPage(count = STORY_COUNT): Promise<RawStory[]> {
     .map((it, i) => ({ it, hnRank: i + 1 }))
     .filter((x): x is { it: HnItem; hnRank: number } => usable(x.it));
 
-  const commentIds = kept.map(({ it }) => (it.kids ?? []).slice(0, COMMENTS_PER_STORY));
-  const commentBatches = await mapLimit(commentIds, 12, (kids) =>
-    mapLimit(kids, COMMENTS_PER_STORY, item),
-  );
+  const threadSets = await mapLimit(kept, 8, ({ it }) => fetchThreads(it));
 
   return kept.map(({ it, hnRank }, i) => ({
     id: it.id,
@@ -95,9 +106,47 @@ export async function fetchFrontPage(count = STORY_COUNT): Promise<RawStory[]> {
     ageHours: it.time ? Math.round(((now - it.time) / 3600) * 10) / 10 : 0,
     body: it.text ? cleanComment(it.text) : null,
     articleText: null,
-    topComments: (commentBatches[i] ?? [])
-      .map((c) => (c && !c.dead && !c.deleted ? cleanComment(c.text) : null))
-      .filter((c): c is string => c !== null),
+    threads: threadSets[i] ?? [],
     hnRank,
   }));
+}
+
+const alive = (c: HnItem | null): c is HnItem => Boolean(c && !c.dead && !c.deleted);
+
+/**
+ * Breadth across top-level comments, then depth into the most-replied ones.
+ *
+ * Reply count is the cheap proxy for contention: a comment with fifteen replies is
+ * almost always being argued with, and we can know that from one field before spending
+ * a fetch on any of the replies.
+ */
+export async function fetchThreads(story: HnItem): Promise<CommentThread[]> {
+  const topIds = (story.kids ?? []).slice(0, TOP_LEVEL_COMMENTS);
+  if (!topIds.length) return [];
+
+  const tops = (await mapLimit(topIds, 8, item)).filter(alive);
+
+  // Go deep only where an argument is likely, so the extra fetches are not wasted.
+  const contested = [...tops]
+    .sort((a, b) => (b.kids?.length ?? 0) - (a.kids?.length ?? 0))
+    .slice(0, DEEP_THREADS)
+    .filter((c) => (c.kids?.length ?? 0) > 0);
+
+  const replySets = await mapLimit(contested, 6, (c) =>
+    mapLimit((c.kids ?? []).slice(0, REPLIES_PER_THREAD), REPLIES_PER_THREAD, item),
+  );
+  const repliesById = new Map<number, string[]>(
+    contested.map((c, i) => [
+      c.id,
+      (replySets[i] ?? []).filter(alive).map((r) => cleanComment(r.text)).filter((t): t is string => t !== null),
+    ]),
+  );
+
+  return tops
+    .map((c) => {
+      const text = cleanComment(c.text);
+      if (!text) return null;
+      return { text, replies: repliesById.get(c.id) ?? [], replyCount: c.kids?.length ?? 0 };
+    })
+    .filter((t): t is CommentThread => t !== null);
 }

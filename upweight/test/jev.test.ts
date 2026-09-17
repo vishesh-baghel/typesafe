@@ -28,7 +28,7 @@ const story = (over: Partial<RawStory> = {}): RawStory => ({
   ageHours: 3,
   body: null,
   articleText: 'Article body. '.repeat(50),
-  topComments: ['first', 'second'],
+  threads: [{ text: 'first', replies: ['a reply'], replyCount: 3 }, { text: 'second', replies: [], replyCount: 0 }],
   hnRank: 1,
   ...over,
 });
@@ -55,9 +55,15 @@ describe('buildState', () => {
   it('names the fields the questions reference by path', () => {
     const s = buildState(story());
     expect(s).toHaveProperty('article_text');
-    expect(s).toHaveProperty('top_comments');
+    expect(s).toHaveProperty('discussion');
     expect(s.story).toHaveProperty('title');
     expect(s.story).toHaveProperty('comment_count');
+  });
+
+  it('keeps replies nested under their parent, which is what makes conflict visible', () => {
+    const d = buildState(story()).discussion;
+    expect(d[0]!.replies).toEqual(['a reply']);
+    expect(d[0]!.replyCount).toBe(3);
   });
 
   it('passes a null article through rather than inventing one', () => {
@@ -172,7 +178,7 @@ describe('scoreStory', () => {
     systemOne.mockResolvedValue({ answers: fullAnswers() });
     const out = await scoreStory(story());
     expect(out).not.toHaveProperty('articleText');
-    expect(out).not.toHaveProperty('topComments');
+    expect(out).not.toHaveProperty('threads');
   });
 });
 

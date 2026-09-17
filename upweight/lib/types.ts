@@ -31,9 +31,26 @@ export interface RawStory {
    * drop is what marks the card as thin evidence.
    */
   articleText: string | null;
-  topComments: string[];
+  /**
+   * Discussion sample, shaped as threads rather than a flat list.
+   *
+   * The flat top-5 was systematically wrong for judging conflict. HN orders `kids` by
+   * rank, so the top comments are the most upvoted, which on HN means the most agreed
+   * with. Arguments live in the replies underneath. Keeping the reply structure also
+   * lets the model see back-and-forth, which is what separates "a real disagreement"
+   * from "several people arguing, with heat and repetition".
+   */
+  threads: CommentThread[];
   hnRank: number;
 }
+
+export type CommentThread = {
+  text: string;
+  /** Direct replies, sampled from the most-replied threads first. */
+  replies: string[];
+  /** Total reply count on HN, which is itself a conflict signal. */
+  replyCount: number;
+};
 
 export interface Dimension {
   /** Normalised 0 to 1. Meaningless when `available` is false. */
@@ -49,7 +66,7 @@ export interface Dimension {
   available: boolean;
 }
 
-export interface ScoredStory extends Omit<RawStory, 'body' | 'topComments' | 'articleText'> {
+export interface ScoredStory extends Omit<RawStory, 'body' | 'threads' | 'articleText'> {
   /**
    * Whether an article was available when this was scored. Four dimensions name
    * `article_text` in their instructions, so without it their answers describe an absent

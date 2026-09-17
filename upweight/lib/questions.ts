@@ -10,8 +10,10 @@ import { noul, score } from '@typesafe-ai/sdk';
  *
  * Two design notes worth keeping when these get rewritten:
  *
- *   `drama` names `top_comments` by path. It judges the discussion, not the headline,
+ *   `drama` names `discussion` by path. It judges the conversation, not the headline,
  *   and without the path it drifts toward scoring how inflammatory the title sounds.
+ *   The shape matters as much as the path: replies are nested under the comment they
+ *   answer, so the model can see back-and-forth rather than a flat list of opinions.
  *
  *   Four dimensions name `article_text` by path, because that is where their evidence
  *   actually lives. Measured in scripts/experiment-state.ts: without the article,
@@ -40,13 +42,16 @@ export const QUESTIONS = {
     'Teaches something an experienced engineer did not already know',
   ]),
 
-  drama: score('How much conflict is in `top_comments`?', [
+  drama: score(
+    'How much conflict is in `discussion`? Each entry is a top-level comment with its replies; `replyCount` is how many replies it drew on the site.',
+    [
     'The comments agree with each other, or there are no comments',
     'A mild correction or a request for clarification',
     'A real disagreement, argued politely',
     'Several people arguing, with heat and repetition',
     'A pile-on: personal, entrenched, unlikely to resolve',
-  ]),
+    ],
+  ),
 
   practical_utility: score(
     'Based on `article_text`, could a reader use this in their own work within a week?',
