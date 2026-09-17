@@ -1,3 +1,4 @@
+import { revalidateTag } from 'next/cache';
 import { readPayload, writePayload } from '@/lib/store';
 import { runRefresh } from '@/lib/refresh';
 
@@ -28,6 +29,10 @@ export async function GET(req: Request) {
     const { payload: previous } = await readPayload();
     const { payload, stats } = await runRefresh(previous);
     const url = await writePayload(payload);
+    // Drop the cached read immediately, so a refresh is visible on the next request
+    // rather than up to a minute later.
+    // Next 16 requires the two-argument form; revalidateTag(tag) alone is deprecated.
+    revalidateTag('payload', 'max');
 
     return Response.json({
       ok: true,

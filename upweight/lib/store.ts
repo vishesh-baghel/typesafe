@@ -1,3 +1,4 @@
+import { unstable_cache } from 'next/cache';
 import snapshot from '../data/snapshot.json';
 import type { Payload } from './types';
 
@@ -54,7 +55,7 @@ export function isStale(generatedAt: string, now = Date.now()): boolean {
   return !Number.isFinite(t) || now - t > STALE_AFTER_MS;
 }
 
-export async function readPayload(now = Date.now()): Promise<ReadResult> {
+async function readPayloadUncached(now: number): Promise<ReadResult> {
   // No token means no store configured, which is the normal case in local development
   // and on a fresh deploy. The committed snapshot covers it.
   if (process.env.BLOB_READ_WRITE_TOKEN || process.env.BLOB_STORE_ID) {
@@ -79,6 +80,29 @@ export async function readPayload(now = Date.now()): Promise<ReadResult> {
     source: 'snapshot',
     stale: isStale(committedSnapshot.generatedAt, now),
   };
+}
+
+/**
+ * The page reads `?w=` so it is fully dynamic and cannot be statically cached. Without a
+ * cache around the Blob read specifically, every single visitor would pull 232KB from
+ * Blob, which bills per operation and per byte. A traffic spike would be expensive for
+ * data that changes once an hour and is identical for everyone.
+ *
+ * So the read is cached on its own, independent of the page's dynamism. Visitors share
+ * one Blob read per minute per region; the ranking stays personal because that happens
+ * in the browser from the same shared payload.
+ */
+const cachedRead = unstable_cache(
+  async () => readPayloadUncached(Date.now()),
+  ['upweight-payload'],
+  { revalidate: READ_REVALIDATE, tags: ['payload'] },
+);
+
+export async function readPayload(): Promise<ReadResult> {
+  const result = await cachedRead();
+  // Staleness is recomputed against the current clock, since the cached entry carries
+  // the freshness verdict from whenever it was written.
+  return { ...result, stale: isStale(result.payload.generatedAt) };
 }
 
 /** Used by the cron only. Deterministic path so the read URL never changes. */

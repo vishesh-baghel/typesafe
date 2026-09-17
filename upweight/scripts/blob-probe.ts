@@ -1,30 +1,20 @@
 /**
- * Round-trips the real payload through the private Blob store, so the write path is
- * proven before a deploy depends on it. Phase 3 could not test this: the store did not
- * exist yet.
- *
+ * Confirms whether the Blob CDN cache is what makes reads stale.
  * Run: pnpm exec tsx --env-file=.env.local scripts/blob-probe.ts
  */
-import { readFileSync } from 'node:fs';
-import { readPayload, writePayload } from '../lib/store';
-import type { Payload } from '../lib/types';
+import { get } from '@vercel/blob';
+import { BLOB_ACCESS, BLOB_PATH } from '../lib/store';
 
-async function main() {
-  const local: Payload = JSON.parse(readFileSync('data/snapshot.json', 'utf8'));
-  console.log(`writing ${local.stories.length} stories (${(JSON.stringify(local).length / 1024).toFixed(0)}KB)...`);
-
-  const url = await writePayload(local);
-  console.log('wrote        :', url.replace(/\/[^/]*$/, '/…'));
-
-  const back = await readPayload();
-  console.log('read source  :', back.source);
-  console.log('stories      :', back.payload.stories.length);
-  console.log('generatedAt  :', back.payload.generatedAt);
-  console.log('stale        :', back.stale);
-  console.log('round trip   :', back.source === 'blob' && back.payload.stories.length === local.stories.length ? 'OK' : 'MISMATCH');
+async function read(useCache: boolean) {
+  const r = await get(BLOB_PATH, { access: BLOB_ACCESS, useCache });
+  if (!r) return 'missing';
+  const d = JSON.parse(await new Response(r.stream).text());
+  return d.generatedAt;
 }
 
-main().catch((e) => {
-  console.error('FAILED:', e instanceof Error ? e.message : e);
-  process.exit(1);
-});
+async function main() {
+  console.log('useCache: true  ->', await read(true));
+  console.log('useCache: false ->', await read(false));
+}
+
+main().catch((e) => { console.error('FAILED:', e instanceof Error ? e.message : e); process.exit(1); });
