@@ -5,8 +5,8 @@
     "theme": "Cobalt",
     "theme_axes": "cool-light / grotesk-sans / electric-cobalt",
     "nav": "N13",
-    "footer": "Ft4",
+    "footer": "Ft2",
     "enrichment": "none",
-    "brief": "HN Slider Ranker — interactive prototype of a Jev-scored, slider-reranked HN front page"
+    "brief": "HN Slider Ranker \u2014 instrument-first prototype; explanation in an opt-in modal; single-theme light"
   }
 ]
