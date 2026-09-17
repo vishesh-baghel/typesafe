@@ -10,7 +10,8 @@
     "smoke": "tsx --env-file=.env.local scripts/smoke.ts",
     "score": "tsx --env-file=.env.local scripts/score-once.ts",
     "correlate": "tsx scripts/correlate.ts",
-    "test": "vitest run"
+    "test": "vitest run",
+    "review": "tsx scripts/review.ts"
   },
   "dependencies": {
     "@typesafe-ai/sdk": "^0.6.0",
@@ -22,6 +23,7 @@
     "react-dom": "19.2.8"
   },
   "devDependencies": {
+    "@rolldown/binding-linux-x64-gnu": "^1.2.9",
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
     "@types/react": "^19",
