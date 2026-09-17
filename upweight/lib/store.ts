@@ -14,6 +14,14 @@ import type { Payload } from './types';
 
 export const BLOB_PATH = 'scored-latest.json';
 
+/**
+ * The store is private, and that is the right shape for this. The payload never needed
+ * to be publicly fetchable: every read happens on the server, either in the page's
+ * server component or in the /api/payload route, both of which hold the token. Nothing
+ * is lost and the raw document is not sitting on an open URL.
+ */
+export const BLOB_ACCESS = 'private' as const;
+
 /** Seconds the CDN may serve a cached payload. The cron writes hourly. */
 export const READ_REVALIDATE = 60;
 
@@ -47,15 +55,14 @@ export function isStale(generatedAt: string, now = Date.now()): boolean {
 }
 
 export async function readPayload(now = Date.now()): Promise<ReadResult> {
-  const base = process.env.BLOB_BASE_URL;
-
-  if (base) {
+  // No token means no store configured, which is the normal case in local development
+  // and on a fresh deploy. The committed snapshot covers it.
+  if (process.env.BLOB_READ_WRITE_TOKEN || process.env.BLOB_STORE_ID) {
     try {
-      const res = await fetch(`${base.replace(/\/$/, '')}/${BLOB_PATH}`, {
-        next: { revalidate: READ_REVALIDATE },
-      });
-      if (res.ok) {
-        const json: unknown = await res.json();
+      const { get } = await import('@vercel/blob');
+      const result = await get(BLOB_PATH, { access: BLOB_ACCESS });
+      if (result) {
+        const json: unknown = JSON.parse(await new Response(result.stream).text());
         // A malformed blob is treated as absent. Serving the committed snapshot is
         // always better than rendering a page from a half-written document.
         if (isPayload(json)) {
@@ -63,7 +70,7 @@ export async function readPayload(now = Date.now()): Promise<ReadResult> {
         }
       }
     } catch {
-      // Network failure, DNS, TLS. Fall through to the snapshot.
+      // Missing object, network failure, malformed JSON. Fall through to the snapshot.
     }
   }
 
@@ -78,7 +85,7 @@ export async function readPayload(now = Date.now()): Promise<ReadResult> {
 export async function writePayload(payload: Payload): Promise<string> {
   const { put } = await import('@vercel/blob');
   const { url } = await put(BLOB_PATH, JSON.stringify(payload), {
-    access: 'public',
+    access: BLOB_ACCESS,
     addRandomSuffix: false,
     allowOverwrite: true,
     contentType: 'application/json',
