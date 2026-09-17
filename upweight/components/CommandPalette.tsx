@@ -33,8 +33,6 @@ export function CommandPalette({
 
   useEffect(() => {
     if (!open) return;
-    setQuery('');
-    setSelected(0);
     inputRef.current?.focus();
     document.body.style.overflow = 'hidden';
     return () => {
@@ -42,9 +40,10 @@ export function CommandPalette({
     };
   }, [open]);
 
-  useEffect(() => {
-    if (selected >= filtered.length) setSelected(0);
-  }, [filtered.length, selected]);
+  // Clamp during render rather than correcting it in an effect. Typing can shrink the
+  // list below the selected index, and fixing that with setState costs an extra render
+  // and a frame where the highlight is on nothing.
+  const active = Math.min(selected, Math.max(0, filtered.length - 1));
 
   useEffect(() => {
     if (!open) return;
@@ -60,7 +59,7 @@ export function CommandPalette({
         setSelected((i) => Math.max(i - 1, 0));
       } else if (e.key === 'Enter') {
         e.preventDefault();
-        const cmd = filtered[selected];
+        const cmd = filtered[active];
         if (cmd) {
           onClose();
           cmd.run();
@@ -69,7 +68,7 @@ export function CommandPalette({
     };
     document.addEventListener('keydown', onKey);
     return () => document.removeEventListener('keydown', onKey);
-  }, [open, filtered, selected, onClose]);
+  }, [open, filtered, active, onClose]);
 
   if (!open) return null;
 
@@ -91,9 +90,9 @@ export function CommandPalette({
           value={query}
           onChange={(e) => setQuery(e.target.value)}
         />
-        <ul>
+        <ul role="listbox" aria-label="Commands">
           {filtered.map((cmd, i) => (
-            <li key={cmd.label} aria-selected={i === selected}>
+            <li key={cmd.label} role="option" aria-selected={i === active}>
               <button
                 type="button"
                 onMouseEnter={() => setSelected(i)}

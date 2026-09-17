@@ -22,7 +22,6 @@ export default async function Page({ searchParams }: PageProps<'/'>) {
   return (
     <Ranker
       stories={payload.stories}
-      jevCalls={payload.jevCalls}
       initialWeights={initialWeights}
       generatedAt={payload.generatedAt}
       stale={stale}

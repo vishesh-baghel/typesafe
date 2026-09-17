@@ -7,7 +7,6 @@ import type { ScoredStory } from '@/lib/types';
 interface Props {
   story: ScoredStory;
   position: number;
-  moved: 'up' | 'down' | null;
   score: number;
   maxAbs: number;
   weights: Weights;
@@ -18,16 +17,16 @@ interface Props {
 const HOT = 60;
 
 export function StoryCard({
-  story, position, moved, score, maxAbs, weights, open, onToggleRaw,
+  story, position, score, maxAbs, weights, open, onToggleRaw,
 }: Props) {
   const pct = (Math.abs(score) / maxAbs) * 50;
   const negative = score < 0;
 
   return (
     <li className="story" data-sid={story.id}>
-      <span className="story__rank num" {...(moved ? { 'data-moved': moved } : {})}>
-        {String(position).padStart(2, '0')}
-      </span>
+      {/* data-moved is set imperatively by the FLIP effect in Ranker, which is the
+          only place that knows whether this row rose or fell. */}
+      <span className="story__rank num">{String(position).padStart(2, '0')}</span>
 
       <div>
         <h3 className="story__title">

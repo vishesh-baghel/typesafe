@@ -14,7 +14,6 @@ import {
 import { DIM_KEYS, type ScoredStory } from '@/lib/types';
 import { CommandPalette, type Command } from './CommandPalette';
 import { HowModal } from './HowModal';
-import { Receipt } from './Receipt';
 import { StoryCard } from './StoryCard';
 import { WeightSliders } from './WeightSliders';
 
@@ -22,14 +21,12 @@ const URL_SYNC_DELAY = 300;
 
 export function Ranker({
   stories,
-  jevCalls,
   initialWeights,
   generatedAt,
   stale,
   source,
 }: {
   stories: ScoredStory[];
-  jevCalls: number;
   initialWeights: Weights;
   generatedAt: string;
   /** Older than a refresh interval plus slack. Shown, never hidden. */
@@ -37,7 +34,6 @@ export function Ranker({
   source: 'blob' | 'snapshot';
 }) {
   const [weights, setWeights] = useState<Weights>(initialWeights);
-  const [rerankCount, setRerankCount] = useState(0);
   const [openDrawers, setOpenDrawers] = useState<ReadonlySet<number>>(new Set());
   const [copied, setCopied] = useState(false);
   const [howOpen, setHowOpen] = useState(false);
@@ -52,23 +48,6 @@ export function Ranker({
     () => Math.max(0.0001, ...ranked.map((s) => Math.abs(scores.get(s.id) ?? 0))),
     [ranked, scores],
   );
-
-  /* ── movement direction, for the coloured rank number ─────────────── */
-  const previousOrder = useRef<number[]>(ranked.map((s) => s.id));
-  const moved = useMemo(() => {
-    const before = new Map(previousOrder.current.map((id, i) => [id, i]));
-    const out = new Map<number, 'up' | 'down'>();
-    ranked.forEach((s, i) => {
-      const was = before.get(s.id);
-      if (was === undefined || was === i) return;
-      out.set(s.id, was > i ? 'up' : 'down');
-    });
-    return out;
-  }, [ranked]);
-
-  useEffect(() => {
-    previousOrder.current = ranked.map((s) => s.id);
-  }, [ranked]);
 
   /* ── FLIP ──────────────────────────────────────────────────────────
      Positions are captured document-relative rather than viewport-relative, so a
@@ -89,7 +68,15 @@ export function Ranker({
       next.set(id, top);
 
       const was = positions.current.get(id);
-      if (reduced || was === undefined || was === top) continue;
+      if (was === undefined || was === top) continue;
+
+      // The delta's sign is the movement direction, so the rank colour comes free.
+      const rankEl = node.querySelector<HTMLElement>('.story__rank');
+      if (rankEl) {
+        rankEl.dataset.moved = was > top ? 'up' : 'down';
+        setTimeout(() => delete rankEl.dataset.moved, 900);
+      }
+      if (reduced) continue;
 
       node.style.transition = 'none';
       node.style.transform = `translateY(${was - top}px)`;
@@ -118,23 +105,18 @@ export function Ranker({
   }, [weights]);
 
   /* ── actions ───────────────────────────────────────────────────────── */
-  const bumpRerank = () => setRerankCount((n) => n + 1);
-
   const handleChange = useCallback((key: keyof Weights, value: number) => {
     setWeights((w) => ({ ...w, [key]: value }));
-    bumpRerank();
   }, []);
 
   const handlePreset = useCallback((name: string) => {
     const preset = PRESETS[name];
     if (!preset) return;
     setWeights({ ...preset });
-    bumpRerank();
   }, []);
 
   const handleReset = useCallback(() => {
     setWeights({ ...DEFAULT_WEIGHTS });
-    bumpRerank();
   }, []);
 
   const toggleRaw = useCallback((id: number) => {
@@ -160,7 +142,6 @@ export function Ranker({
 
   const zeroAll = useCallback(() => {
     setWeights(Object.fromEntries(DIM_KEYS.map((k) => [k, 0])) as Weights);
-    bumpRerank();
   }, []);
 
   const commands = useMemo<Command[]>(
@@ -206,7 +187,6 @@ export function Ranker({
         <div className="wrap bar__in">
           <span className="bar__mark">Upweight</span>
           <span className="bar__tag">The Hacker News front page, weighted your way.</span>
-          <Receipt jevCalls={jevCalls} rerankCount={rerankCount} />
           <div className="bar__right">
             <button
               type="button"
@@ -254,7 +234,6 @@ export function Ranker({
                   key={story.id}
                   story={story}
                   position={i + 1}
-                  moved={moved.get(story.id) ?? null}
                   score={scores.get(story.id) ?? 0}
                   maxAbs={maxAbs}
                   weights={weights}
@@ -289,6 +268,7 @@ export function Ranker({
 
       <HowModal open={howOpen} onClose={() => setHowOpen(false)} />
       <CommandPalette
+        key={paletteOpen ? 'open' : 'closed'}
         open={paletteOpen}
         commands={commands}
         onClose={() => setPaletteOpen(false)}

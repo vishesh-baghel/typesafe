@@ -3,9 +3,12 @@
 import { useEffect, useRef } from 'react';
 
 /**
- * Everything explanatory lives here rather than on the page, so a visitor meets the
- * instrument first and reads only if they choose to. Content is about the model, not
- * the build: the repo carries the stack.
+ * Written as a walkthrough of what happens to one story, not as a spec.
+ *
+ * An earlier version led with the primitive names and the request shape, which is the
+ * right explanation for someone already sold and the wrong one for someone who just
+ * opened the page. This version follows a single story through and names machinery only
+ * where it earns the mention.
  */
 export function HowModal({ open, onClose }: { open: boolean; onClose: () => void }) {
   const closeRef = useRef<HTMLButtonElement>(null);
@@ -39,103 +42,99 @@ export function HowModal({ open, onClose }: { open: boolean; onClose: () => void
 
         <div className="sheet__body">
           <div className="blk">
-            <h2 id="howTitle">How a story becomes six numbers</h2>
+            <h2 id="howTitle">What happens to a story here</h2>
             <p className="lede">
-              Jev is a System One model. It reads natural language the way an LLM does,
-              but instead of writing a reply it returns{' '}
-              <strong>typed answers with calibrated probabilities</strong>. Each story
-              here was sent once with eight questions attached. What came back was
-              numbers, and that is the only reason these sliders can work with the network
-              switched off.
+              Hacker News shows everyone the same front page in the same order. Someone
+              else decided what matters. This page hands that decision to you, and the
+              trick that makes it possible is smaller than you would expect.
             </p>
           </div>
 
           <div className="blk">
-            <span className="mono blk__k">Score: the six sliders</span>
+            <span className="mono blk__k">First, every story gets interviewed</span>
             <p>
-              A Score question defines ordered levels and asks which one fits. Jev answers
-              with a probability for every level, plus the probability weighted position
-              between them. Each of the six dimensions on the left is one Score question
-              whose five levels describe concrete situations rather than grading on
-              adjectives.
+              Before a story reaches this page, an AI model reads it and answers eight
+              short questions about it. Not &quot;summarise this&quot;, which comes back as
+              a paragraph nobody can do anything with. Questions with fixed answers, closer
+              to a form than a conversation.
+            </p>
+            <p>
+              One asks how much real substance the article holds, and the model is not
+              allowed to answer with an adjective. It has to pick one of five rungs, each
+              describing an actual situation:
             </p>
             <div className="code">
               <div className="code__bar">
-                <span className="mono">one of the six questions</span>
+                <span className="mono">the technical depth question</span>
               </div>
               <pre>
-                <code>{`{
-  "type": "score",
-  "instructions": "How much substance is there in \`article_text\` for a working engineer?",
-  "criteria": [
-    "A product page or announcement with no implementation detail",
-    "Describes what was built, but not how",
-    "Explains the approach at a level you could argue with",
-    "Shows the mechanism: code, measurements, tradeoffs",
-    "Teaches something an experienced engineer did not already know"
-  ]
-}`}</code>
+                <code>{`"A product page or announcement with no implementation detail"
+"Describes what was built, but not how"
+"Explains the approach at a level you could argue with"
+"Shows the mechanism: code, measurements, tradeoffs"
+"Teaches something an experienced engineer did not know"`}</code>
               </pre>
             </div>
             <p>
-              The answer is a position from 0 to 4 along those levels. This page divides
-              by 4 to get the values printed beside each bar. Nothing is parsed out of
-              prose, because there is no prose.
+              The others work the same way. Is the comment section arguing. Could you
+              actually use this tomorrow. Is this real work, or AI hype wearing a lab coat.
             </p>
           </div>
 
           <div className="blk">
-            <span className="mono blk__k">Noul: the two pills</span>
+            <span className="mono blk__k">The answers come back as numbers</span>
             <p>
-              A Noul question asks whether a statement holds and returns the probability
-              that the answer is yes. It has no separate confidence value, because the
-              probability already is the signal. A Noul near 0.5 means Jev finds yes and
-              no about equally likely, not that the thing is half true.
+              This is the part that matters, and it is easy to skim past. The model does
+              not reply with a sentence. It replies with a position: 3.2 of 4 on that
+              ladder, plus how sure it is.
             </p>
             <p>
-              The <span className="pill pill--flag">original research</span> and{' '}
-              <span className="pill pill--warn">rage bait</span> pills are the two Nouls.
-              They stay out of the weighted ranking on purpose: they are not degrees along
-              a spectrum, they are claims that either hold or do not, so a slider would be
-              the wrong control for them.
+              You can multiply a number. You can add it to another, subtract it, or decide
+              it counts double. You cannot do any of that to a paragraph. Everything below
+              follows from that one difference.
             </p>
           </div>
 
           <div className="blk">
-            <span className="mono blk__k">When a question cannot be answered</span>
+            <span className="mono blk__k">Then the model goes home</span>
             <p>
-              Four of the six dimensions read the article. When the article cannot be
-              fetched, those questions are not asked at all. That sounds cautious but it
-              is the opposite: asked anyway, the model answers about an absent field and
-              is <em>confident</em> about it, scoring technical depth at 0.00 because there
-              genuinely is no substance in an empty string.
+              By the time you open this page the thinking is finished and the numbers are
+              already sitting in your browser. Dragging a slider does not ask anyone
+              anything. It is arithmetic on data you already have, which is why the list
+              reorders instantly.
             </p>
             <p>
-              A confidently wrong number is worse than an honest gap, so those stories show{' '}
-              <span className="pill pill--thin">scored on 2 of 6</span> and are ranked on
-              what could actually be judged, renormalised so they are not punished for the
-              missing evidence.
+              Try it: turn off your wifi, drag <em>AI slop</em> to minus one hundred, and
+              watch the bottom of the list become the top. Nothing left the machine.
             </p>
           </div>
 
           <div className="blk">
-            <span className="mono blk__k">Why this makes sliders possible</span>
+            <span className="mono blk__k">When it cannot answer, it says so</span>
             <p>
-              All eight questions travel in one request and are evaluated independently,
-              so the eighth costs almost nothing over the first. No question sees another
-              question&apos;s answer.
+              Four of the six questions are really about the article, so they need the
+              article. Sometimes we cannot get it: a paywall, a site that blocks us, a page
+              that is all JavaScript.
             </p>
             <p>
-              Because the result is numbers rather than an opinion, the ranking policy
-              never has to live inside the model. It lives here:
+              We could ask anyway. The model would look at the empty space where the
+              article should be and confidently report that it holds no technical
+              substance, which is perfectly true and completely useless. A confident wrong
+              number is worse than an honest gap, so those questions are not asked at all.
+              Those stories carry a{' '}
+              <span className="pill pill--thin">scored on 2 of 6</span> tag and are ranked
+              on what could actually be judged.
             </p>
-            <p className="formula">
-              composite = Σ (w<sub>d</sub> ÷ 100) × score<sub>d</sub>
-            </p>
+          </div>
+
+          <div className="blk">
+            <span className="mono blk__k">Two things that are not sliders</span>
             <p>
-              Moving a slider changes one <code>w</code>. Nothing is re-read, re-prompted
-              or re-sent. A text model cannot offer this, because a paragraph of reasoning
-              has no coefficients you can turn.
+              <span className="pill pill--flag">original research</span> and{' '}
+              <span className="pill pill--warn">rage bait</span> are yes-or-no questions,
+              not more-or-less ones. A story either presents the author&apos;s own work or
+              summarises someone else&apos;s. Sliding halfway would not mean anything, so
+              they stay as tags and stay out of the ranking.
             </p>
           </div>
         </div>

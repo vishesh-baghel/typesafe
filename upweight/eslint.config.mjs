@@ -13,6 +13,17 @@ const eslintConfig = defineConfig([
     "build/**",
     "next-env.d.ts",
   ]),
+  {
+    rules: {
+      // A leading underscore is the conventional marker for a deliberate discard. We
+      // destructure heavy fields out of the story before storing it precisely so they
+      // cannot reach the client, and naming them is the clearest way to say which.
+      "@typescript-eslint/no-unused-vars": [
+        "warn",
+        { varsIgnorePattern: "^_", argsIgnorePattern: "^_", caughtErrorsIgnorePattern: "^_" },
+      ],
+    },
+  },
 ]);
 
 export default eslintConfig;

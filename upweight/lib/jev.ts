@@ -131,7 +131,9 @@ export async function scoreStory(story: RawStory): Promise<ScoredStory> {
     ? answered.reduce((sum, k) => sum + scores[k].confidence, 0) / answered.length
     : 0;
 
-  const { body: _body, threads: _threads, articleText, ...rest } = story;
+  // Discarded deliberately: raw article text and comment threads must not reach the
+  // client. They are megabytes and they are not the product.
+  const { body: _body, threads: _threads, articleText: _articleText, ...rest } = story;
 
   return {
     ...rest,
