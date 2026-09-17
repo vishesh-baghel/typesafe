@@ -94,11 +94,20 @@ export const QUESTIONS = {
     ],
   ),
 
-  has_original_research: noul(
+  /*
+   * Named for what it measures: whether this is the source or a report of one.
+   *
+   * It was called has_original_research, which promised a different axis than the model
+   * was measuring. On a real front page it fired on a war story about a PHP fix and on
+   * reverse-engineering Factorio, while a reported science breakthrough scored 0.03.
+   * That story genuinely is original research; it just is not first-hand. The question
+   * was always right, the name was not.
+   */
+  is_primary_source: noul(
     'Does `article_text` present first-hand work by the author rather than summarising work done elsewhere?',
     {
-      true: 'The author built, measured, or discovered the thing being described',
-      false: 'A summary, roundup, or commentary on someone else work',
+      true: 'The author built, measured, ran, or discovered the thing being described',
+      false: 'A report, summary, roundup, or commentary on work done by someone else',
     },
   ),
 

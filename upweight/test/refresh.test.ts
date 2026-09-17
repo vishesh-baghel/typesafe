@@ -29,7 +29,7 @@ const scoredFrom = (s: RawStory, over: Partial<ScoredStory> = {}): ScoredStory =
   scores: Object.fromEntries(
     DIM_KEYS.map((k) => [k, { value: 0.5, raw: 2, confidence: 0.8, available: true }]),
   ) as ScoredStory['scores'],
-  flags: { hasOriginalResearch: 0.5, isRageBait: 0.1 },
+  flags: { isPrimarySource: 0.5, isRageBait: 0.1 },
   evidenceStrength: 0.8,
   requestState: {},
   rawResponse: {},

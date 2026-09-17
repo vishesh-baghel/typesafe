@@ -38,7 +38,7 @@ const noul = (v: number) => ({ type: 'noul', noul: v });
 
 const fullAnswers = () => ({
   ...Object.fromEntries(DIM_KEYS.map((k) => [QUESTION_ID[k], score(2)])),
-  has_original_research: noul(0.9),
+  is_primary_source: noul(0.9),
   is_rage_bait: noul(0.1),
 });
 

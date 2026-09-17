@@ -34,7 +34,7 @@ const story = (id: number, vals: Partial<Record<keyof Weights, number>>, opts: {
   scores: Object.fromEntries(
     DIM_KEYS.map((k) => [k, dim(vals[k] ?? 0, !opts.unavailable?.includes(k))]),
   ) as Record<keyof Weights, Dimension>,
-  flags: { hasOriginalResearch: 0.5, isRageBait: 0.1 },
+  flags: { isPrimarySource: 0.5, isRageBait: 0.1 },
   evidenceStrength: 0.8,
   requestState: {},
   rawResponse: {},

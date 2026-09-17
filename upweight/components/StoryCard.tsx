@@ -18,6 +18,12 @@ interface Props {
 
 const HOT = 60;
 
+/**
+ * Raised from 0.7, where it fired on half the front page. A tag that common is
+ * wallpaper: it stops meaning "notable" and starts meaning "default".
+ */
+const PRIMARY_SOURCE_MIN = 0.85;
+
 export function StoryCard({
   story, position, score, maxAbs, weights, open, questions, model, onToggleRaw,
 }: Props) {
@@ -49,8 +55,10 @@ export function StoryCard({
             {story.commentCount} comments
           </a>
           <span title={exactAge(story.ageHours)}>{relativeAge(story.ageHours)}</span>
-          {story.flags && story.flags.hasOriginalResearch > 0.7 && (
-            <span className="pill pill--flag">original research</span>
+          {story.flags && story.flags.isPrimarySource > PRIMARY_SOURCE_MIN && (
+            <span className="pill pill--flag" title="The author built, measured or discovered this, rather than reporting on someone else's work">
+              primary source
+            </span>
           )}
           {story.flags && story.flags.isRageBait > 0.6 && (
             <span className="pill pill--warn">rage bait</span>

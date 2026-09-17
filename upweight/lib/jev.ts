@@ -101,7 +101,7 @@ export function validateAnswers(
     if (!isScore(answers[id])) return `bad or missing score: ${id}`;
   }
   if (hasArticle) {
-    if (!isNoul(answers['has_original_research'])) return 'bad or missing noul: has_original_research';
+    if (!isNoul(answers['is_primary_source'])) return 'bad or missing noul: is_primary_source';
     if (!isNoul(answers['is_rage_bait'])) return 'bad or missing noul: is_rage_bait';
   }
   return null;
@@ -152,7 +152,7 @@ export async function scoreStory(story: RawStory): Promise<ScoredStory> {
     scores,
     flags: hasArticle
       ? {
-          hasOriginalResearch: (answers['has_original_research'] as NoulAnswer).noul,
+          isPrimarySource: (answers['is_primary_source'] as NoulAnswer).noul,
           isRageBait: (answers['is_rage_bait'] as NoulAnswer).noul,
         }
       : null,

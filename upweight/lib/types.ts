@@ -75,7 +75,7 @@ export interface ScoredStory extends Omit<RawStory, 'body' | 'threads' | 'articl
   hasArticle: boolean;
   scores: Record<DimKey, Dimension>;
   /** Null when there was no article to judge them against. */
-  flags: { hasOriginalResearch: number; isRageBait: number } | null;
+  flags: { isPrimarySource: number; isRageBait: number } | null;
   /** Mean confidence across the *available* Scores. Under 0.4 means thin evidence. */
   evidenceStrength: number;
   /**

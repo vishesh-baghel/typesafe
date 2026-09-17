@@ -92,9 +92,9 @@ function main() {
   console.log(`\n  flagged rage bait (${rage.length})`);
   for (const s of rage) console.log(`    ${s.flags!.isRageBait.toFixed(2)}  ${t(s)}`);
 
-  const research = S.filter((s) => s.flags && s.flags.hasOriginalResearch > 0.8);
-  console.log(`\n  flagged original research (${research.length})`);
-  for (const s of research.slice(0, 6)) console.log(`    ${s.flags!.hasOriginalResearch.toFixed(2)}  ${t(s)}`);
+  const research = S.filter((s) => s.flags && s.flags.isPrimarySource > 0.85);
+  console.log(`\n  flagged primary source (${research.length})`);
+  for (const s of research.slice(0, 6)) console.log(`    ${s.flags!.isPrimarySource.toFixed(2)}  ${t(s)}`);
 }
 
 main();

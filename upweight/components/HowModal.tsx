@@ -120,11 +120,11 @@ export function HowModal({ open, onClose }: { open: boolean; onClose: () => void
           <div className="blk">
             <span className="mono blk__k">Two things that are not sliders</span>
             <p>
-              <span className="pill pill--flag">original research</span> and{' '}
+              <span className="pill pill--flag">primary source</span> and{' '}
               <span className="pill pill--warn">rage bait</span> are yes-or-no questions,
-              not more-or-less ones. A story either presents the author&apos;s own work or
-              summarises someone else&apos;s. Sliding halfway would not mean anything, so
-              they stay as tags and stay out of the ranking.
+              not more-or-less ones. A story is either the source of what it describes or
+              a report about it, and sliding halfway between those would not mean
+              anything, so they stay as tags and stay out of the ranking.
             </p>
           </div>
 

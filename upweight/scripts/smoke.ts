@@ -39,7 +39,7 @@ async function main() {
     );
   }
   if (scored.flags) {
-    console.log(`\n  original research  ${scored.flags.hasOriginalResearch.toFixed(2)}`);
+    console.log(`\n  primary source     ${scored.flags.isPrimarySource.toFixed(2)}`);
     console.log(`  rage bait          ${scored.flags.isRageBait.toFixed(2)}`);
   } else {
     console.log('\n  nouls skipped: no article to judge them against');
