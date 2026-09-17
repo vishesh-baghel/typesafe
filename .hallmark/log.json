@@ -1,0 +1,12 @@
+[
+  {
+    "date": "2026-09-17",
+    "macrostructure": "Workbench",
+    "theme": "Cobalt",
+    "theme_axes": "cool-light / grotesk-sans / electric-cobalt",
+    "nav": "N13",
+    "footer": "Ft4",
+    "enrichment": "none",
+    "brief": "HN Slider Ranker — interactive prototype of a Jev-scored, slider-reranked HN front page"
+  }
+]

@@ -1,0 +1,158 @@
+/* HN Slider Ranker — design tokens
+ * Hallmark · genre: modern-minimal · theme: Cobalt · macrostructure: Workbench
+ * Lift this file into the Next.js app at Phase 2; the prototype and the app
+ * must not drift apart. Fonts: Space Grotesk 500/600/700 · Inter 400/500/600
+ * · JetBrains Mono 400/500 (self-host or next/font; the prototype inlines them
+ * as woff2 data URIs only because the artifact CSP blocks font CDNs).
+ */
+
+:root {
+  --font-display: "Space Grotesk", ui-sans-serif, system-ui, sans-serif;
+  --font-body: "Inter", ui-sans-serif, system-ui, -apple-system, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+
+  --text-xs: 0.6875rem;
+  --text-sm: 0.8125rem;
+  --text-base: 0.9375rem;
+  --text-lg: 1.0625rem;
+  --text-xl: 1.375rem;
+  --text-2xl: 1.75rem;
+  --text-3xl: clamp(1.75rem, 1.2rem + 2.2vw, 2.75rem);
+  --text-display: clamp(2.25rem, 1.3rem + 4vw, 4rem);
+
+  --space-2xs: 0.25rem;
+  --space-xs: 0.5rem;
+  --space-sm: 0.75rem;
+  --space-md: 1rem;
+  --space-lg: 1.5rem;
+  --space-xl: 2rem;
+  --space-2xl: 3rem;
+  --space-3xl: 5rem;
+
+  --radius-sm: 4px;
+  --radius-md: 6px;
+  --radius-lg: 10px;
+
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in: cubic-bezier(0.7, 0, 0.84, 0);
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+  --dur-fast: 140ms;
+  --dur-mid: 260ms;
+  --dur-slow: 560ms;
+
+  --rule: 1px;
+  --measure: 62ch;
+
+  /* Cobalt — light */
+  --color-paper: oklch(98.5% 0.004 250);
+  --color-paper-2: oklch(96.4% 0.005 252);
+  --color-paper-3: oklch(94% 0.006 253);
+  --color-ink: oklch(24% 0.02 258);
+  --color-ink-2: oklch(36% 0.018 257);
+  --color-ink-3: oklch(54% 0.015 256);
+  --color-rule: oklch(91% 0.006 255);
+  --color-rule-2: oklch(84% 0.009 255);
+  --color-accent: oklch(52% 0.20 256);
+  --color-accent-ink: oklch(99% 0.005 256);
+  --color-accent-soft: oklch(94.5% 0.028 256);
+  --color-graphite: oklch(22% 0.016 260);
+  --color-graphite-2: oklch(27% 0.016 260);
+  --color-graphite-rule: oklch(34% 0.014 260);
+  --color-on-graphite: oklch(92% 0.006 256);
+  --color-on-graphite-2: oklch(70% 0.012 256);
+  --color-on-graphite-3: oklch(56% 0.012 256);
+  --color-graphite-accent: oklch(72% 0.17 254);
+  --color-pos: oklch(52% 0.13 158);
+  --color-neg: oklch(54% 0.18 27);
+  --color-focus: oklch(52% 0.20 256);
+  --shadow-lift: 0 1px 2px oklch(24% 0.02 258 / 0.06);
+  --color-tok-num: oklch(78% 0.11 90);
+  --color-scrim: oklch(20% 0.02 258 / 0.42);
+  --shadow-overlay: 0 16px 48px oklch(20% 0.02 258 / 0.18);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --color-paper: oklch(17.5% 0.014 260);
+    --color-paper-2: oklch(21% 0.015 260);
+    --color-paper-3: oklch(25% 0.015 260);
+    --color-ink: oklch(95% 0.005 256);
+    --color-ink-2: oklch(84% 0.008 256);
+    --color-ink-3: oklch(63% 0.012 256);
+    --color-rule: oklch(29% 0.014 258);
+    --color-rule-2: oklch(38% 0.015 258);
+    --color-accent: oklch(72% 0.17 254);
+    --color-accent-ink: oklch(15% 0.02 258);
+    --color-accent-soft: oklch(28% 0.06 256);
+    --color-graphite: oklch(12.5% 0.012 260);
+    --color-graphite-2: oklch(17% 0.014 260);
+    --color-graphite-rule: oklch(27% 0.014 260);
+    --color-on-graphite: oklch(92% 0.006 256);
+    --color-on-graphite-2: oklch(70% 0.012 256);
+    --color-on-graphite-3: oklch(54% 0.012 256);
+    --color-graphite-accent: oklch(74% 0.16 254);
+    --color-pos: oklch(72% 0.15 158);
+    --color-neg: oklch(70% 0.16 27);
+    --color-focus: oklch(72% 0.17 254);
+    --shadow-lift: 0 1px 2px oklch(0% 0 0 / 0.3);
+  --color-tok-num: oklch(80% 0.11 90);
+  --color-scrim: oklch(8% 0.012 258 / 0.62);
+  --shadow-overlay: 0 16px 48px oklch(0% 0 0 / 0.5);
+  }
+}
+
+:root[data-theme="dark"] {
+  --color-paper: oklch(17.5% 0.014 260);
+  --color-paper-2: oklch(21% 0.015 260);
+  --color-paper-3: oklch(25% 0.015 260);
+  --color-ink: oklch(95% 0.005 256);
+  --color-ink-2: oklch(84% 0.008 256);
+  --color-ink-3: oklch(63% 0.012 256);
+  --color-rule: oklch(29% 0.014 258);
+  --color-rule-2: oklch(38% 0.015 258);
+  --color-accent: oklch(72% 0.17 254);
+  --color-accent-ink: oklch(15% 0.02 258);
+  --color-accent-soft: oklch(28% 0.06 256);
+  --color-graphite: oklch(12.5% 0.012 260);
+  --color-graphite-2: oklch(17% 0.014 260);
+  --color-graphite-rule: oklch(27% 0.014 260);
+  --color-on-graphite: oklch(92% 0.006 256);
+  --color-on-graphite-2: oklch(70% 0.012 256);
+  --color-on-graphite-3: oklch(54% 0.012 256);
+  --color-graphite-accent: oklch(74% 0.16 254);
+  --color-pos: oklch(72% 0.15 158);
+  --color-neg: oklch(70% 0.16 27);
+  --color-focus: oklch(72% 0.17 254);
+  --shadow-lift: 0 1px 2px oklch(0% 0 0 / 0.3);
+  --color-tok-num: oklch(80% 0.11 90);
+  --color-scrim: oklch(8% 0.012 258 / 0.62);
+  --shadow-overlay: 0 16px 48px oklch(0% 0 0 / 0.5);
+}
+
+:root[data-theme="light"] {
+  --color-paper: oklch(98.5% 0.004 250);
+  --color-paper-2: oklch(96.4% 0.005 252);
+  --color-paper-3: oklch(94% 0.006 253);
+  --color-ink: oklch(24% 0.02 258);
+  --color-ink-2: oklch(36% 0.018 257);
+  --color-ink-3: oklch(54% 0.015 256);
+  --color-rule: oklch(91% 0.006 255);
+  --color-rule-2: oklch(84% 0.009 255);
+  --color-accent: oklch(52% 0.20 256);
+  --color-accent-ink: oklch(99% 0.005 256);
+  --color-accent-soft: oklch(94.5% 0.028 256);
+  --color-graphite: oklch(22% 0.016 260);
+  --color-graphite-2: oklch(27% 0.016 260);
+  --color-graphite-rule: oklch(34% 0.014 260);
+  --color-on-graphite: oklch(92% 0.006 256);
+  --color-on-graphite-2: oklch(70% 0.012 256);
+  --color-on-graphite-3: oklch(56% 0.012 256);
+  --color-graphite-accent: oklch(72% 0.17 254);
+  --color-pos: oklch(52% 0.13 158);
+  --color-neg: oklch(54% 0.18 27);
+  --color-focus: oklch(52% 0.20 256);
+  --shadow-lift: 0 1px 2px oklch(24% 0.02 258 / 0.06);
+  --color-tok-num: oklch(78% 0.11 90);
+  --color-scrim: oklch(20% 0.02 258 / 0.42);
+  --shadow-overlay: 0 16px 48px oklch(20% 0.02 258 / 0.18);
+}
