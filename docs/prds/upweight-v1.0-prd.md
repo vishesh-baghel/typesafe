@@ -1,4 +1,6 @@
-# HN Slider Ranker - Product Requirements Document (PRD)
+# Upweight - Product Requirements Document (PRD)
+
+> The Hacker News front page, weighted your way.
 
 ## Requirements Description
 
@@ -339,5 +341,6 @@ Weights are never sent anywhere. Changing them is a pure function of already-del
 
 **Document Version**: 1.0
 **Created**: 2026-09-17
+**Name**: Upweight (was "HN Slider Ranker"; renamed 2026-09-17)
 **Clarification Rounds**: 3 (initial scoping, success/freshness/failure, state/edge-cases/interaction/target)
 **Quality Score**: 94/100

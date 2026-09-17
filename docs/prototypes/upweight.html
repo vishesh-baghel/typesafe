@@ -1,10 +1,10 @@
-<title>HN Slider Ranker</title>
+<title>Upweight</title>
 <style>
 /* Hallmark · pre-emit critique: P5 H5 E5 S5 R5 V5
  * Hallmark · genre: modern-minimal · macrostructure: Workbench · theme: Cobalt
  * enrichment: none (the instrument is the page) · nav: N13 · footer: Ft2
  * tone: technical / instrument-panel · anchor hue: electric cobalt 256
- * v2 — instrument-first: no hero, no marketing sections. All explanatory copy
+ * Upweight · v3 — instrument-first: no hero, no marketing sections. All explanatory copy
  *      moved into an opt-in modal. Single-theme light by explicit user choice
  *      (artifact-design: "commit to one visual world — make it a choice").
  * note: Workbench adapted — the live instrument replaces screenshot frames
@@ -137,6 +137,7 @@ p { margin: 0; }
   font-family: var(--font-display); font-weight: 600; font-size: var(--text-sm);
   color: var(--color-ink); letter-spacing: -0.02em; white-space: nowrap;
 }
+.bar__tag { display: none; font-size: var(--text-sm); color: var(--color-ink-3); white-space: nowrap; }
 .bar__chip {
   border: var(--rule) dashed var(--color-rule-2); border-radius: var(--radius-sm);
   padding: 2px 6px; color: var(--color-ink-3); white-space: nowrap;
@@ -444,6 +445,7 @@ td.n { font-family: var(--font-mono); font-variant-numeric: tabular-nums; color:
   .sheet__body { padding-inline: var(--space-xl); }
 }
 @media (min-width: 64rem) {
+  .bar__tag { display: inline; }
   .instrument { grid-template-columns: 19rem minmax(0, 1fr); gap: var(--space-xl); }
   .rail { position: sticky; top: 70px; }
 }
@@ -451,7 +453,8 @@ td.n { font-family: var(--font-mono); font-variant-numeric: tabular-nums; color:
   .btn, .preset, .link-btn { min-height: 44px; }
   .preset { padding-inline: var(--space-md); }
   .link-btn { padding-block: 10px; }
-  .bar__chip { display: none; }
+  .bar__tag { display: none; font-size: var(--text-sm); color: var(--color-ink-3); white-space: nowrap; }
+.bar__chip { display: none; }
   .bar__in { min-height: 58px; }
   .strip__note { display: none; }
   input[type="range"] { height: 44px; }
@@ -464,7 +467,8 @@ td.n { font-family: var(--font-mono); font-variant-numeric: tabular-nums; color:
 <!-- ─── top bar ────────────────────────────────────────────────────── -->
 <header class="bar">
   <div class="wrap bar__in">
-    <span class="bar__mark">HN Slider Ranker</span>
+    <span class="bar__mark">Upweight</span>
+    <span class="bar__tag">The Hacker News front page, weighted your way.</span>
     <span class="mono bar__chip">Sample scores</span>
     <div class="bar__right">
       <button class="btn btn--ghost" id="kbdBtn" aria-haspopup="dialog">
