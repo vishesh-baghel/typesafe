@@ -30,6 +30,14 @@ export function WeightSliders({
       </div>
 
       <div className="panel__body">
+        {/* Above the presets on purpose. Sharing a weight set is the loop that makes
+            this travel, and at the bottom of a six-slider rail it was below the fold. */}
+        <button type="button" className="btn btn--primary btn--full" onClick={onCopyLink}>
+          {copied ? 'Link copied' : 'Share these weights'}
+        </button>
+      </div>
+
+      <div className="panel__body" style={{ borderTop: '1px solid var(--color-rule)' }}>
         <div className="presets" role="group" aria-label="Weight presets">
           {Object.keys(PRESETS).map((name) => (
             <button
@@ -76,12 +84,6 @@ export function WeightSliders({
             </div>
           );
         })}
-      </div>
-
-      <div className="panel__body" style={{ borderTop: '1px solid var(--color-rule)' }}>
-        <button type="button" className="btn btn--ghost" onClick={onCopyLink} style={{ width: '100%' }}>
-          {copied ? 'Link copied' : 'Copy link to these weights'}
-        </button>
       </div>
     </div>
   );

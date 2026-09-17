@@ -1,0 +1,32 @@
+name: Refresh scores
+
+# Hourly, which Vercel Cron cannot do on a Hobby plan. Calls the same endpoint the
+# Vercel cron calls, with the same bearer token, so there is one code path either way.
+on:
+  schedule:
+    - cron: '0 * * * *'
+  workflow_dispatch: # so a refresh can be forced before recording or posting
+
+concurrency:
+  group: refresh
+  cancel-in-progress: false
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Trigger scoring
+        env:
+          URL: ${{ secrets.UPWEIGHT_URL }}
+          SECRET: ${{ secrets.CRON_SECRET }}
+        run: |
+          if [ -z "$URL" ] || [ -z "$SECRET" ]; then
+            echo "UPWEIGHT_URL or CRON_SECRET not set"; exit 1
+          fi
+          CODE=$(curl -sS -o /tmp/out.json -w '%{http_code}' --max-time 300 \
+            -H "Authorization: Bearer $SECRET" "$URL/api/cron/score")
+          echo "HTTP $CODE"
+          # The endpoint reports what it did; surface it in the run log.
+          cat /tmp/out.json | head -c 2000; echo
+          [ "$CODE" = "200" ] || exit 1

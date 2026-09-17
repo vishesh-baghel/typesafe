@@ -157,6 +157,7 @@ p { margin: 0; }
 .btn--ghost { background: var(--color-paper-2); color: var(--color-ink-2); border-color: var(--color-rule-2); }
 .btn--ghost:hover { border-color: var(--color-accent); color: var(--color-ink); }
 .btn:active { transform: translateY(1px); }
+.btn--full { width: 100%; }
 .btn kbd {
   font-family: var(--font-mono); font-size: 10px;
   border: var(--rule) solid var(--color-rule-2); border-radius: 3px;
