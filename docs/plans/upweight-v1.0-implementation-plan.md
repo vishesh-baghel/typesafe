@@ -4,7 +4,12 @@
 > defines what gets built and how it is judged. This document resolves the decisions the
 > PRD left open and sequences the work file by file.
 
-**Status**: not started. Phase 1 is blocked on a TypeSafe API key.
+**Status**: Phase 1 complete (2026-09-17). Phase 2 starting.
+
+Corrections against what this document assumed: pnpm not npm, Next.js 16.3.5 not 15,
+everything under `upweight/`, and a fourth runtime dependency (`firecrawl`). The state
+composition and question set both changed under measurement. See "Phase 1 outcome" in
+the PRD for the numbers.
 
 ---
 
@@ -95,11 +100,11 @@ Target: 3 to 4 hours, including at least one full question rewrite.
 ### 1.1 Scaffold
 
 ```bash
-npx create-next-app@latest upweight --ts --app --tailwind --eslint --no-src-dir --use-npm
+pnpm create next-app@latest upweight --ts --app --tailwind --eslint --no-src-dir --import-alias "@/*" --use-pnpm --turbopack
 ```
 
-Then `npm i @typesafe-ai/sdk @vercel/blob @vercel/analytics` and
-`npm i -D vitest tsx`. Set `"strict": true` and `"noUncheckedIndexedAccess": true`
+Then `pnpm add @typesafe-ai/sdk @vercel/blob @vercel/analytics firecrawl` and
+`pnpm add -D vitest tsx`. Set `"strict": true` and `"noUncheckedIndexedAccess": true`
 in `tsconfig.json`. Copy `docs/prototypes/tokens.css` into `app/globals.css` below the
 Tailwind directives, and wire the three fonts through `next/font/google` rather than
 data URIs (the CSP constraint that forced inlining applies only to the artifact).
@@ -270,8 +275,9 @@ export async function scoreStory(story: RawStory): Promise<ScoredStory | null>
 `correlate` reads that snapshot and prints the 15 pairwise Pearson correlations.
 
 ```bash
-npx tsx scripts/score-once.ts
-npx tsx scripts/correlate.ts
+pnpm score
+pnpm correlate
+pnpm review
 ```
 
 ### 1.8 The gate

@@ -46,6 +46,11 @@
 
 #### Input / Output
 
+> **Superseded by Phase 1 measurement (2026-09-17).** This section described state as
+> title, metadata and the top five comments, with article scraping explicitly rejected.
+> Measurement overturned both halves of that. See "Phase 1 outcome" at the end of this
+> document. The sections below are kept as written for the record.
+
 **Ingestion input** — Hacker News Firebase API (public, unauthenticated):
 - `GET /v0/topstories.json` → array of item IDs; take the first 30.
 - `GET /v0/item/{id}.json` → story object.
@@ -336,6 +341,68 @@ Weights are never sent anywhere. Changing them is a pure function of already-del
 - **Time**: 2–3 hours.
 
 **Total estimate**: 13–17 hours, roughly two focused days.
+
+---
+
+## Phase 1 outcome (2026-09-17)
+
+Two measured findings changed the design. Both are reproducible from `upweight/scripts/`.
+
+### State had to include the full article
+
+`experiment-state.ts` scored the same stories with and without article text. Four of the
+six dimensions name the article in their instructions, and without it they were guesses:
+
+| dimension | without article | with article |
+| --- | --- | --- |
+| technical_depth (Nvidia GPU/Rust) | 0.02 | 0.73 |
+| practical_utility | 0.14 | 0.77 |
+| ai_slop | 0.61 at 0.26 confidence | 0.27 at 0.81 |
+| drama (control) | 0.39 | 0.40 |
+
+`drama` moving 0.01 is what makes this credible rather than noise: drama reads comments,
+which were present all along. Articles are now fetched through Firecrawl with a plain
+fetch behind it, because `experiment-firecrawl.ts` showed each extractor rescues pages
+the other loses. That experiment also refuted the reason we reached for Firecrawl: clean
+extraction barely moves the scores (mean ai_slop shift +0.005, confidence -0.016). It
+earns its place on coverage, not cleanliness. Live coverage runs 90 to 100 percent.
+
+### Absent evidence inverts rather than degrades
+
+With no article, the four article-dependent questions did not become uncertain. They
+became confidently wrong: technical_depth 0.00 at 0.95 mean confidence, because the
+model was correctly reporting that an absent field contains no substance. Those
+questions are no longer sent without an article. Dimensions carry `available: false`,
+`evidenceStrength` averages only what was answered, and the Nouls are null.
+
+**This breaks an acceptance criterion as originally written.** `evidenceStrength` for a
+no-article story is now around 0.75, because it averages the two dimensions that were
+answered. The thin-evidence marker must key off `hasArticle` and per-dimension
+`available`, not `evidenceStrength` alone, or it will silently never fire.
+
+### Comment sampling was measuring the wrong part of the thread
+
+The top-five sample took HN's highest-ranked comments, which are the ones people agreed
+with, then asked how heated the discussion was. Drama maxed at 0.47 with mean 0.238 and
+levels 3 and 4 never fired. Now: 8 top-level comments, plus replies from the 3
+most-replied threads, nested so back-and-forth is visible. Max 0.65, mean 0.35, 7 stories
+above 0.50.
+
+### Gate results
+
+- Criterion 1 (defensible rankings): five of six dimensions ordered correctly at their
+  extremes on first review. Drama fixed after the sampling change.
+- Criterion 2 (independence): PASS. Highest pair tech x novelty at r = 0.703. The
+  predicted `ai_slop` x `novelty` collision did not happen, at r = 0.03 before the
+  drama change.
+- Criterion 3 (absent evidence is visible): PASS after the fix above. Failed as first
+  written, and the criterion itself was wrong: it tested for absent comments when the
+  real failure was absent articles.
+
+### Stack corrections
+
+pnpm rather than npm. Next.js 16.3.5, not 15. App lives in `upweight/`. A fourth runtime
+dependency, `firecrawl`, beyond the three planned.
 
 ---
 
