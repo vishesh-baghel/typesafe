@@ -36,6 +36,7 @@ const story = (id: number, vals: Partial<Record<keyof Weights, number>>, opts: {
   ) as Record<keyof Weights, Dimension>,
   flags: { hasOriginalResearch: 0.5, isRageBait: 0.1 },
   evidenceStrength: 0.8,
+  requestState: {},
   rawResponse: {},
 });
 

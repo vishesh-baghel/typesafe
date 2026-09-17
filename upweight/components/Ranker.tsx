@@ -21,12 +21,16 @@ const URL_SYNC_DELAY = 300;
 
 export function Ranker({
   stories,
+  questions,
+  model,
   initialWeights,
   generatedAt,
   stale,
   source,
 }: {
   stories: ScoredStory[];
+  questions: unknown;
+  model: string;
   initialWeights: Weights;
   generatedAt: string;
   /** Older than a refresh interval plus slack. Shown, never hidden. */
@@ -158,7 +162,7 @@ export function Ranker({
         hint: 'raw',
         run: () => setOpenDrawers(new Set(stories.map((s) => s.id))),
       },
-      { label: 'Close every raw response', hint: 'raw', run: () => setOpenDrawers(new Set()) },
+      { label: 'Close every request and response', hint: 'raw', run: () => setOpenDrawers(new Set()) },
       { label: 'Copy link to these weights', hint: 'share', run: () => void copyLink() },
       { label: 'How this works', hint: 'help', run: () => setHowOpen(true) },
     ],
@@ -238,6 +242,8 @@ export function Ranker({
                   maxAbs={maxAbs}
                   weights={weights}
                   open={openDrawers.has(story.id)}
+                  questions={story.hasArticle ? (questions as { full?: unknown })?.full : (questions as { withoutArticle?: unknown })?.withoutArticle}
+                  model={model}
                   onToggleRaw={toggleRaw}
                 />
               ))}

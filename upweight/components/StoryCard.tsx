@@ -11,13 +11,15 @@ interface Props {
   maxAbs: number;
   weights: Weights;
   open: boolean;
+  questions: unknown;
+  model: string;
   onToggleRaw: (id: number) => void;
 }
 
 const HOT = 60;
 
 export function StoryCard({
-  story, position, score, maxAbs, weights, open, onToggleRaw,
+  story, position, score, maxAbs, weights, open, questions, model, onToggleRaw,
 }: Props) {
   const pct = (Math.abs(score) / maxAbs) * 50;
   const negative = score < 0;
@@ -113,16 +115,37 @@ export function StoryCard({
             aria-expanded={open}
             onClick={() => onToggleRaw(story.id)}
           >
-            {open ? 'hide raw response' : 'raw response'}
+            {open ? 'hide request and response' : 'request and response'}
           </button>
         </div>
 
         {open && (
-          <div className="drawer">
-            <pre>
-              <code>{JSON.stringify(story.rawResponse, null, 2)}</code>
-            </pre>
-          </div>
+          <>
+            <div className="drawer">
+              <div className="drawer__bar">
+                <span className="mono">request</span>
+                <span className="mono">POST /v1/systemone</span>
+              </div>
+              <pre>
+                <code>
+                  {JSON.stringify(
+                    { model, state: story.requestState, questions },
+                    null,
+                    2,
+                  )}
+                </code>
+              </pre>
+            </div>
+            <div className="drawer">
+              <div className="drawer__bar">
+                <span className="mono">response</span>
+                <span className="chip-ok">200 OK</span>
+              </div>
+              <pre>
+                <code>{JSON.stringify({ model, answers: story.rawResponse }, null, 2)}</code>
+              </pre>
+            </div>
+          </>
         )}
       </div>
     </li>

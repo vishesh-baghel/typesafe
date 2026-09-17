@@ -315,8 +315,16 @@ input[type="range"]:focus-visible::-moz-range-thumb { box-shadow: 0 0 0 3px colo
 
 .drawer {
   margin-top: var(--space-sm); background: var(--color-graphite);
-  border: var(--rule) solid var(--color-graphite-rule); border-radius: var(--radius-md); overflow-x: auto;
+  border: var(--rule) solid var(--color-graphite-rule); border-radius: var(--radius-md);
+  overflow: hidden;
 }
+.drawer__bar {
+  display: flex; align-items: center; justify-content: space-between; gap: var(--space-sm);
+  padding: var(--space-xs) var(--space-md);
+  border-bottom: var(--rule) solid var(--color-graphite-rule);
+  color: var(--color-on-graphite-3);
+}
+.drawer pre { overflow-x: auto; max-height: 26rem; overflow-y: auto; }
 .drawer pre, .code pre {
   margin: 0; padding: var(--space-md);
   font-family: var(--font-mono); font-size: var(--text-xs); line-height: 1.7;

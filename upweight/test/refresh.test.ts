@@ -31,6 +31,7 @@ const scoredFrom = (s: RawStory, over: Partial<ScoredStory> = {}): ScoredStory =
   ) as ScoredStory['scores'],
   flags: { hasOriginalResearch: 0.5, isRageBait: 0.1 },
   evidenceStrength: 0.8,
+  requestState: {},
   rawResponse: {},
   ...over,
 });
@@ -70,6 +71,7 @@ describe('runRefresh', () => {
       generatedAt: '2026-09-17T00:00:00.000Z',
       jevCalls: 12,
       model: 'jev-latest',
+      questions: {},
       stories: [scoredFrom(raw(1), { evidenceStrength: 0.42 })],
     };
 
@@ -92,7 +94,7 @@ describe('runRefresh', () => {
     });
 
     const previous: Payload = {
-      generatedAt: '2026-09-17T00:00:00.000Z', jevCalls: 12, model: 'jev-latest',
+      generatedAt: '2026-09-17T00:00:00.000Z', jevCalls: 12, model: 'jev-latest', questions: {},
       stories: [scoredFrom(raw(1, { points: 1, commentCount: 1, ageHours: 1 }))],
     };
 

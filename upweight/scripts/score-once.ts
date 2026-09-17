@@ -8,6 +8,7 @@ import { mkdirSync, writeFileSync } from 'node:fs';
 import { attachArticles } from '../lib/article';
 import { fetchFrontPage, STORY_COUNT } from '../lib/hn';
 import { buildState, estimateTokens, MODEL, scoreAll } from '../lib/jev';
+import { QUESTIONS, QUESTIONS_NO_ARTICLE } from '../lib/questions';
 import { DIM_KEYS, type Payload } from '../lib/types';
 
 const SHORT: Record<string, string> = {
@@ -82,6 +83,7 @@ async function main() {
     generatedAt: new Date().toISOString(),
     jevCalls: stories.length,
     model: MODEL,
+    questions: { full: QUESTIONS, withoutArticle: QUESTIONS_NO_ARTICLE },
     stories: scored,
   };
   mkdirSync('data', { recursive: true });

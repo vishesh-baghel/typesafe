@@ -78,6 +78,12 @@ export interface ScoredStory extends Omit<RawStory, 'body' | 'threads' | 'articl
   flags: { hasOriginalResearch: number; isRageBait: number } | null;
   /** Mean confidence across the *available* Scores. Under 0.4 means thin evidence. */
   evidenceStrength: number;
+  /**
+   * The state as sent, with `article_text` truncated. Storing the whole article thirty
+   * times over would add megabytes to a document that is fetched on every page view, and
+   * the drawer only needs to show the shape and prove the text was real.
+   */
+  requestState: unknown;
   rawResponse: unknown;
 }
 
@@ -85,5 +91,10 @@ export interface Payload {
   generatedAt: string;
   jevCalls: number;
   model: string;
+  /**
+   * The question set, stored once rather than per story. It is byte-identical across all
+   * thirty requests, so repeating it would be thirty copies of the same 5KB.
+   */
+  questions: unknown;
   stories: ScoredStory[];
 }

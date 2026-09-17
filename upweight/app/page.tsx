@@ -22,6 +22,8 @@ export default async function Page({ searchParams }: PageProps<'/'>) {
   return (
     <Ranker
       stories={payload.stories}
+      questions={payload.questions}
+      model={payload.model}
       initialWeights={initialWeights}
       generatedAt={payload.generatedAt}
       stale={stale}

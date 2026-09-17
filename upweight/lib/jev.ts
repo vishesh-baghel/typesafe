@@ -57,6 +57,17 @@ export function buildState(story: RawStory) {
   return base;
 }
 
+/** Article text is the only unbounded field; everything else is already small. */
+export const REQUEST_PREVIEW_CHARS = 420;
+
+export function redactState(state: ReturnType<typeof buildState>): unknown {
+  const article = state.article_text;
+  if (!article || article.length <= REQUEST_PREVIEW_CHARS) return state;
+  const shown = article.slice(0, REQUEST_PREVIEW_CHARS);
+  const rest = article.length - REQUEST_PREVIEW_CHARS;
+  return { ...state, article_text: `${shown}\n\n... [${rest.toLocaleString()} more characters sent]` };
+}
+
 interface ScoreAnswer { type: 'score'; score: number; confidence: number }
 interface NoulAnswer { type: 'noul'; noul: number }
 
@@ -146,6 +157,7 @@ export async function scoreStory(story: RawStory): Promise<ScoredStory> {
         }
       : null,
     evidenceStrength,
+    requestState: redactState(state),
     rawResponse: res.answers,
   };
 }

@@ -1,6 +1,7 @@
 import { attachArticles, type ArticleStats } from './article';
 import { fetchFrontPage, STORY_COUNT } from './hn';
 import { MODEL, scoreAll } from './jev';
+import { QUESTIONS, QUESTIONS_NO_ARTICLE } from './questions';
 import type { Payload, ScoredStory } from './types';
 
 /**
@@ -82,6 +83,7 @@ export async function runRefresh(
       generatedAt: new Date().toISOString(),
       jevCalls: stories.length,
       model: MODEL,
+      questions: { full: QUESTIONS, withoutArticle: QUESTIONS_NO_ARTICLE },
       stories: finalStories,
     },
     stats: {
