@@ -60,21 +60,11 @@ export function HowModal({ open, onClose }: { open: boolean; onClose: () => void
             </p>
             <p>
               One asks how much real substance the article holds, and the model is not
-              allowed to answer with an adjective. It has to pick one of five rungs, each
-              describing an actual situation:
+              allowed to answer with an adjective. It has to pick one of five rungs, and
+              each rung describes an actual situation: a product announcement with no
+              implementation detail, at the bottom, up to something that would teach an
+              experienced engineer a thing they did not know.
             </p>
-            <div className="code">
-              <div className="code__bar">
-                <span className="mono">the technical depth question</span>
-              </div>
-              <pre>
-                <code>{`"A product page or announcement with no implementation detail"
-"Describes what was built, but not how"
-"Explains the approach at a level you could argue with"
-"Shows the mechanism: code, measurements, tradeoffs"
-"Teaches something an experienced engineer did not know"`}</code>
-              </pre>
-            </div>
             <p>
               The others work the same way. Is the comment section arguing. Could you
               actually use this tomorrow. Is this real work, or AI hype wearing a lab coat.
@@ -135,6 +125,88 @@ export function HowModal({ open, onClose }: { open: boolean; onClose: () => void
               not more-or-less ones. A story either presents the author&apos;s own work or
               summarises someone else&apos;s. Sliding halfway would not mean anything, so
               they stay as tags and stay out of the ranking.
+            </p>
+          </div>
+
+          <hr className="rule" />
+
+          <div className="blk">
+            <h3 className="tech__h">For developers</h3>
+            <p>
+              The model is <strong>Jev</strong>, TypeSafe&apos;s System One model. It takes
+              natural language like an LLM but returns typed answers with calibrated
+              probabilities instead of text, which is the property everything above rests
+              on.
+            </p>
+          </div>
+
+          <div className="blk">
+            <span className="mono blk__k">The two question types</span>
+            <p>
+              A <strong>Score</strong> defines ordered levels and returns a
+              probability-weighted position across them, plus a confidence derived from how
+              concentrated that distribution is. The six sliders are six Scores with five
+              levels each; raw answers land on 0 to 4 and this page divides by 4.
+            </p>
+            <p>
+              A <strong>Noul</strong> returns the probability that a statement is true. It
+              carries no separate confidence, because the probability already is the
+              signal. A Noul near 0.5 means yes and no are about equally likely, not that
+              the claim is half true. The two tags are Nouls.
+            </p>
+            <p>
+              All eight ride in a single request and are evaluated independently, so the
+              eighth costs almost nothing over the first and no question sees another
+              question&apos;s answer.
+            </p>
+          </div>
+
+          <div className="blk">
+            <span className="mono blk__k">Ranking</span>
+            <p className="formula">
+              composite = Σ (w<sub>d</sub> ÷ 100) × score<sub>d</sub> ÷ Σ |w<sub>d</sub>| ÷ 100
+            </p>
+            <p>
+              Summed only over dimensions that were actually answered, then renormalised by
+              the weight mass that applied. Without that divisor a story missing four
+              dimensions would be ranked last under any tech-weighted preset, which looks
+              like a judgment but is really just absent evidence.
+            </p>
+          </div>
+
+          <div className="blk">
+            <span className="mono blk__k">Pipeline</span>
+            <div className="spec-wrap">
+              <table>
+                <tbody>
+                  <tr>
+                    <td>Scoring</td>
+                    <td>Hourly cron, 30 stories, one request each</td>
+                  </tr>
+                  <tr>
+                    <td>Read path</td>
+                    <td>One JSON document from Blob. No inference, ever</td>
+                  </tr>
+                  <tr>
+                    <td>Article text</td>
+                    <td>Firecrawl first, plain fetch behind it</td>
+                  </tr>
+                  <tr>
+                    <td>Comments</td>
+                    <td>8 top-level, plus replies from the 3 most-replied</td>
+                  </tr>
+                  <tr>
+                    <td>Re-ranking</td>
+                    <td>Pure arithmetic in the browser, zero requests</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <p>
+              Inference is on a schedule rather than a request, so a traffic spike and an
+              empty room cost the same. Comments are sampled by reply count because HN
+              orders by votes, and the highest-voted comment is by definition one people
+              agreed with, which is the worst possible sample for judging conflict.
             </p>
           </div>
         </div>
