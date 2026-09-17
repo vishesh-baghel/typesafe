@@ -8,8 +8,6 @@ interface Props {
   onChange: (key: keyof Weights, value: number) => void;
   onPreset: (name: string) => void;
   onReset: () => void;
-  onCopyLink: () => void;
-  copied: boolean;
 }
 
 /**
@@ -18,7 +16,7 @@ interface Props {
  * flatten it.
  */
 export function WeightSliders({
-  weights, activePreset, onChange, onPreset, onReset, onCopyLink, copied,
+  weights, activePreset, onChange, onPreset, onReset,
 }: Props) {
   return (
     <div className="panel">
@@ -30,14 +28,6 @@ export function WeightSliders({
       </div>
 
       <div className="panel__body">
-        {/* Above the presets on purpose. Sharing a weight set is the loop that makes
-            this travel, and at the bottom of a six-slider rail it was below the fold. */}
-        <button type="button" className="btn btn--primary btn--full" onClick={onCopyLink}>
-          {copied ? 'Link copied' : 'Share these weights'}
-        </button>
-      </div>
-
-      <div className="panel__body" style={{ borderTop: '1px solid var(--color-rule)' }}>
         <div className="presets" role="group" aria-label="Weight presets">
           {Object.keys(PRESETS).map((name) => (
             <button

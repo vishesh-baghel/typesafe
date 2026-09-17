@@ -39,7 +39,6 @@ export function Ranker({
 }) {
   const [weights, setWeights] = useState<Weights>(initialWeights);
   const [openDrawers, setOpenDrawers] = useState<ReadonlySet<number>>(new Set());
-  const [copied, setCopied] = useState(false);
   const [howOpen, setHowOpen] = useState(false);
   const [paletteOpen, setPaletteOpen] = useState(false);
 
@@ -136,8 +135,6 @@ export function Ranker({
     url.searchParams.set('w', encodeWeights(weights));
     try {
       await navigator.clipboard.writeText(url.toString());
-      setCopied(true);
-      setTimeout(() => setCopied(false), 1800);
     } catch {
       // Clipboard can be blocked by permissions or an insecure origin. The URL bar is
       // already correct either way, so there is nothing to recover.
@@ -221,8 +218,6 @@ export function Ranker({
               onChange={handleChange}
               onPreset={handlePreset}
               onReset={handleReset}
-              onCopyLink={copyLink}
-              copied={copied}
             />
           </div>
 
