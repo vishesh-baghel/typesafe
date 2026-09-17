@@ -94,6 +94,7 @@ export async function fetchFrontPage(count = STORY_COUNT): Promise<RawStory[]> {
     commentCount: it.descendants ?? 0,
     ageHours: it.time ? Math.round(((now - it.time) / 3600) * 10) / 10 : 0,
     body: it.text ? cleanComment(it.text) : null,
+    articleText: null,
     topComments: (commentBatches[i] ?? [])
       .map((c) => (c && !c.dead && !c.deleted ? cleanComment(c.text) : null))
       .filter((c): c is string => c !== null),

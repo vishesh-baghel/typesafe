@@ -35,8 +35,12 @@ async function main() {
       `  ${QUESTION_ID[key].padEnd(18)} ${bar} ${d.value.toFixed(2)}  raw ${d.raw.toFixed(2)}  conf ${d.confidence.toFixed(2)}`,
     );
   }
-  console.log(`\n  original research  ${scored.flags.hasOriginalResearch.toFixed(2)}`);
-  console.log(`  rage bait          ${scored.flags.isRageBait.toFixed(2)}`);
+  if (scored.flags) {
+    console.log(`\n  original research  ${scored.flags.hasOriginalResearch.toFixed(2)}`);
+    console.log(`  rage bait          ${scored.flags.isRageBait.toFixed(2)}`);
+  } else {
+    console.log('\n  nouls skipped: no article to judge them against');
+  }
   console.log(`  evidence strength  ${scored.evidenceStrength.toFixed(2)}`);
   console.log('\nSmoke test passed. Run `pnpm score` for the full front page.');
 }

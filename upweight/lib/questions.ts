@@ -13,6 +13,15 @@ import { noul, score } from '@typesafe-ai/sdk';
  *   `drama` names `top_comments` by path. It judges the discussion, not the headline,
  *   and without the path it drifts toward scoring how inflammatory the title sounds.
  *
+ *   Four dimensions name `article_text` by path, because that is where their evidence
+ *   actually lives. Measured in scripts/experiment-state.ts: without the article,
+ *   technical_depth on a GPU-programming announcement scored 0.02 and ai_slop scored
+ *   0.61 at 0.26 confidence. With it: 0.73 and 0.27 at 0.81. No fallback instruction is
+ *   given for the case where `article_text` is null, deliberately. Telling the model to
+ *   substitute the title would buy confidence it has not earned. Letting it see an
+ *   absent field is what makes the confidence drop, and that drop is what the
+ *   thin-evidence marker reads.
+ *
  *   `ai_slop` and `novelty` are the pair most at risk of collapsing into one dimension,
  *   since both reward real work. Their levels are deliberately about different things:
  *   slop is about effort and honesty, novelty is about priority. If the Phase 1
@@ -23,7 +32,7 @@ import { noul, score } from '@typesafe-ai/sdk';
 export const LEVELS = 5;
 
 export const QUESTIONS = {
-  technical_depth: score('How much substance is here for a working engineer?', [
+  technical_depth: score('How much substance is there in `article_text` for a working engineer?', [
     'A product page or announcement with no implementation detail',
     'Describes what was built, but not how',
     'Explains the approach at a level you could argue with',
@@ -40,7 +49,7 @@ export const QUESTIONS = {
   ]),
 
   practical_utility: score(
-    'Could a reader use this in their own work within a week?',
+    'Based on `article_text`, could a reader use this in their own work within a week?',
     [
       'Commentary or news. There is nothing to apply',
       'Context that might inform a decision later',
@@ -51,7 +60,7 @@ export const QUESTIONS = {
   ),
 
   ai_slop: score(
-    'How much of this is low-effort AI hype rather than real work?',
+    'How much of `article_text` is low-effort AI hype rather than real work?',
     [
       'Original work, with no AI marketing framing at all',
       'Real work that happens to involve AI',
@@ -61,7 +70,7 @@ export const QUESTIONS = {
     ],
   ),
 
-  novelty: score('How new is this to a reader who follows the field?', [
+  novelty: score('How new is `article_text` to a reader who follows the field?', [
     'A restatement of something widely known',
     'A familiar idea carried by a fresh example',
     'A known approach pushed somewhere it had not gone before',
@@ -81,17 +90,34 @@ export const QUESTIONS = {
   ),
 
   has_original_research: noul(
-    'Does this present first-hand work by the author rather than summarising work done elsewhere?',
+    'Does `article_text` present first-hand work by the author rather than summarising work done elsewhere?',
     {
       true: 'The author built, measured, or discovered the thing being described',
       false: 'A summary, roundup, or commentary on someone else work',
     },
   ),
 
-  is_rage_bait: noul('Is this engineered to provoke rather than to inform?', {
+  is_rage_bait: noul('Is `article_text` engineered to provoke rather than to inform?', {
     true: 'The framing invites outrage and the substance does not support the framing',
     false: 'A strong opinion is fine when the argument is actually made',
   }),
+} as const;
+
+/**
+ * Four Scores and both Nouls name `article_text`. Without an article they do not
+ * degrade, they invert: the model answers about an absent field and is *confident*
+ * about it. Measured on the first full run, the two article-less stories scored
+ * technical_depth 0.00 and 0.01 at 0.95 mean confidence, which is a confidently wrong
+ * signal rather than an honestly uncertain one.
+ *
+ * So we do not ask them. `drama` reads `top_comments` and `career_relevance` reads the
+ * title and source, and those are the only two answerable without the article.
+ */
+export const ARTICLE_DEPENDENT = ['tech', 'util', 'slop', 'nov'] as const;
+
+export const QUESTIONS_NO_ARTICLE = {
+  drama: QUESTIONS.drama,
+  career_relevance: QUESTIONS.career_relevance,
 } as const;
 
 export type QuestionSet = typeof QUESTIONS;

@@ -25,22 +25,41 @@ export interface RawStory {
   ageHours: number;
   /** Post body for Ask HN / Show HN / text posts. Null for link posts. */
   body: string | null;
+  /**
+   * Full article text where it could be fetched. Null when the fetch failed, which is
+   * not an error: the story is still scored, on weaker evidence, and the confidence
+   * drop is what marks the card as thin evidence.
+   */
+  articleText: string | null;
   topComments: string[];
   hnRank: number;
 }
 
 export interface Dimension {
-  /** Normalised 0 to 1. */
+  /** Normalised 0 to 1. Meaningless when `available` is false. */
   value: number;
   /** Raw position along the levels, 0 to LEVELS-1. */
   raw: number;
   confidence: number;
+  /**
+   * False when the question was never asked because its evidence was missing. The
+   * ranker must skip these and renormalise rather than treat them as a zero, and the
+   * card must show them as unanswered rather than as a low score.
+   */
+  available: boolean;
 }
 
-export interface ScoredStory extends Omit<RawStory, 'body' | 'topComments'> {
+export interface ScoredStory extends Omit<RawStory, 'body' | 'topComments' | 'articleText'> {
+  /**
+   * Whether an article was available when this was scored. Four dimensions name
+   * `article_text` in their instructions, so without it their answers describe an absent
+   * field rather than the story. The UI must not present those as ordinary scores.
+   */
+  hasArticle: boolean;
   scores: Record<DimKey, Dimension>;
-  flags: { hasOriginalResearch: number; isRageBait: number };
-  /** Mean confidence across the six Scores. Under 0.4 means thin evidence. */
+  /** Null when there was no article to judge them against. */
+  flags: { hasOriginalResearch: number; isRageBait: number } | null;
+  /** Mean confidence across the *available* Scores. Under 0.4 means thin evidence. */
   evidenceStrength: number;
   rawResponse: unknown;
 }

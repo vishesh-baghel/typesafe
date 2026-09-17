@@ -42,8 +42,12 @@ async function fetchArticle(url: string): Promise<string | null> {
 
 const client = new TypeSafeClient();
 
-async function run(state: unknown) {
-  const res = await client.systemOne({ model: MODEL, state, questions: QUESTIONS });
+async function run(state: Record<string, unknown>) {
+  const res = await client.systemOne({
+    model: MODEL,
+    state: state as Parameters<typeof client.systemOne>[0]['state'],
+    questions: QUESTIONS,
+  });
   const a = res.answers as unknown as Record<string, { score?: number; confidence?: number; noul?: number }>;
   return DIM_KEYS.map((k) => {
     const ans = a[QUESTION_ID[k]]!;

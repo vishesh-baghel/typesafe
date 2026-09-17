@@ -1,6 +1,6 @@
 import { TypeSafeClient } from '@typesafe-ai/sdk';
 import { mapLimit } from './hn';
-import { LEVELS, QUESTIONS } from './questions';
+import { ARTICLE_DEPENDENT, LEVELS, QUESTIONS, QUESTIONS_NO_ARTICLE } from './questions';
 import { DIM_KEYS, QUESTION_ID, type Dimension, type DimKey, type RawStory, type ScoredStory } from './types';
 
 export const MODEL = 'jev-latest';
@@ -10,9 +10,27 @@ export const SCORE_CONCURRENCY = 8;
 let client: TypeSafeClient | null = null;
 const getClient = () => (client ??= new TypeSafeClient());
 
-/** State per story. Named fields so questions can reference them by path. */
+/**
+ * Request budget is roughly 32,000 tokens shared between state and questions. The eight
+ * questions cost roughly 1,300, so this leaves headroom for both plus overhead.
+ */
+export const TOKEN_BUDGET = 28_000;
+
+/** Roughly four characters per token. Good enough to decide whether to trim. */
+export function estimateTokens(state: unknown): number {
+  return Math.ceil(JSON.stringify(state).length / 4);
+}
+
+/**
+ * State per story. Named fields so questions can reference them by path.
+ *
+ * `article_text` carries the whole article. On the rare page long enough to threaten the
+ * budget, the article is trimmed rather than the story being dropped: a truncated
+ * article is still far better evidence than no article, which is what the Phase 1
+ * experiment measured.
+ */
 export function buildState(story: RawStory) {
-  return {
+  const base = {
     story: {
       title: story.title,
       source: story.source,
@@ -21,14 +39,22 @@ export function buildState(story: RawStory) {
       age_hours: story.ageHours,
       body: story.body,
     },
+    article_text: story.articleText,
     top_comments: story.topComments,
   };
-}
 
-/** Roughly four characters per token. Only a guard against a pathological story. */
-export const TOKEN_BUDGET = 8000;
-export function estimateTokens(state: unknown): number {
-  return Math.ceil(JSON.stringify(state).length / 4);
+  if (!base.article_text) return base;
+
+  const overBy = estimateTokens(base) - TOKEN_BUDGET;
+  if (overBy <= 0) return base;
+
+  // Trim from the end, at a word boundary, leaving a little slack for the estimate.
+  const dropChars = overBy * 4 + 500;
+  const keep = Math.max(2_000, base.article_text.length - dropChars);
+  const cut = base.article_text.slice(0, keep);
+  const lastSpace = cut.lastIndexOf(' ');
+  base.article_text = (lastSpace > keep * 0.9 ? cut.slice(0, lastSpace) : cut) + '...';
+  return base;
 }
 
 interface ScoreAnswer { type: 'score'; score: number; confidence: number }
@@ -51,13 +77,22 @@ const isNoul = (a: unknown): a is NoulAnswer =>
  * A response that fails any of these is treated as a failed call, not as a partial
  * result. Typed output guarantees the interface, not that the interface was honoured.
  */
-export function validateAnswers(answers: Record<string, unknown>): string | null {
-  for (const key of DIM_KEYS) {
+export function validateAnswers(
+  answers: Record<string, unknown>,
+  hasArticle: boolean,
+): string | null {
+  const expected = hasArticle
+    ? DIM_KEYS
+    : DIM_KEYS.filter((k) => !(ARTICLE_DEPENDENT as readonly string[]).includes(k));
+
+  for (const key of expected) {
     const id = QUESTION_ID[key];
     if (!isScore(answers[id])) return `bad or missing score: ${id}`;
   }
-  if (!isNoul(answers['has_original_research'])) return 'bad or missing noul: has_original_research';
-  if (!isNoul(answers['is_rage_bait'])) return 'bad or missing noul: is_rage_bait';
+  if (hasArticle) {
+    if (!isNoul(answers['has_original_research'])) return 'bad or missing noul: has_original_research';
+    if (!isNoul(answers['is_rage_bait'])) return 'bad or missing noul: is_rage_bait';
+  }
   return null;
 }
 
@@ -67,38 +102,47 @@ export class ScoreError extends Error {
   }
 }
 
-export async function scoreStory(story: RawStory): Promise<ScoredStory> {
-  const state = buildState(story);
-  const tokens = estimateTokens(state);
-  if (tokens > TOKEN_BUDGET) {
-    throw new ScoreError(story.id, `state too large: ~${tokens} tokens`);
-  }
+const UNANSWERED: Dimension = { value: 0, raw: 0, confidence: 0, available: false };
 
-  const res = await getClient().systemOne({ model: MODEL, state, questions: QUESTIONS });
+export async function scoreStory(story: RawStory): Promise<ScoredStory> {
+  const hasArticle = story.articleText !== null;
+  const state = buildState(story);
+
+  // Without an article, only the two questions whose evidence is present get asked.
+  // Asking the rest would return confident answers about an absent field.
+  const res = hasArticle
+    ? await getClient().systemOne({ model: MODEL, state, questions: QUESTIONS })
+    : await getClient().systemOne({ model: MODEL, state, questions: QUESTIONS_NO_ARTICLE });
   const answers = res.answers as unknown as Record<string, unknown>;
 
-  const problem = validateAnswers(answers);
+  const problem = validateAnswers(answers, hasArticle);
   if (problem) throw new ScoreError(story.id, problem);
 
   const scores = Object.fromEntries(
     DIM_KEYS.map((key): [DimKey, Dimension] => {
-      const a = answers[QUESTION_ID[key]] as ScoreAnswer;
-      return [key, { value: a.score / (LEVELS - 1), raw: a.score, confidence: a.confidence }];
+      const raw = answers[QUESTION_ID[key]];
+      if (!isScore(raw)) return [key, { ...UNANSWERED }];
+      return [key, { value: raw.score / (LEVELS - 1), raw: raw.score, confidence: raw.confidence, available: true }];
     }),
   ) as Record<DimKey, Dimension>;
 
-  const evidenceStrength =
-    DIM_KEYS.reduce((sum, k) => sum + scores[k].confidence, 0) / DIM_KEYS.length;
+  const answered = DIM_KEYS.filter((k) => scores[k].available);
+  const evidenceStrength = answered.length
+    ? answered.reduce((sum, k) => sum + scores[k].confidence, 0) / answered.length
+    : 0;
 
-  const { body: _body, topComments: _comments, ...rest } = story;
+  const { body: _body, topComments: _comments, articleText, ...rest } = story;
 
   return {
     ...rest,
+    hasArticle,
     scores,
-    flags: {
-      hasOriginalResearch: (answers['has_original_research'] as NoulAnswer).noul,
-      isRageBait: (answers['is_rage_bait'] as NoulAnswer).noul,
-    },
+    flags: hasArticle
+      ? {
+          hasOriginalResearch: (answers['has_original_research'] as NoulAnswer).noul,
+          isRageBait: (answers['is_rage_bait'] as NoulAnswer).noul,
+        }
+      : null,
     evidenceStrength,
     rawResponse: res.answers,
   };
