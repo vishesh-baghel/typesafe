@@ -1,0 +1,21 @@
+# secrets
+.env
+.env.*
+!.env.example
+
+# dependencies
+node_modules/
+.pnpm-store/
+
+# build output
+.next/
+out/
+dist/
+*.tsbuildinfo
+
+# vercel
+.vercel/
+
+# os / editor
+.DS_Store
+*.swp
