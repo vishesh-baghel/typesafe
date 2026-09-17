@@ -1,0 +1,11 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "upweight",
+      "runtimeExecutable": "pnpm",
+      "runtimeArgs": ["--dir", "upweight", "dev"],
+      "port": 3000
+    }
+  ]
+}
