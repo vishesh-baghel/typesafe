@@ -30,6 +30,29 @@ export function shouldActivate(hash: string, sessionFlag: string | null): boolea
   return hash === CAPTURE_HASH || sessionFlag === '1';
 }
 
+/**
+ * X's GraphQL URLs look like `/i/api/graphql/<queryId>/<OperationName>`.
+ *
+ * Matching on the literal string "TweetDetail" turned out to be wrong in practice: the
+ * patch was installed and running on a live post page with replies on screen, and still
+ * never matched. Rather than guess a second name, capture records every operation it
+ * sees and shows them, so the timeline tells us what it actually calls things.
+ */
+export function parseGraphqlOperation(url: string): { queryId: string; operation: string } | null {
+  const m = url.match(/\/graphql\/([\w-]+)\/(\w+)/);
+  return m?.[1] && m[2] ? { queryId: m[1], operation: m[2] } : null;
+}
+
+/**
+ * Which operation carries a post's replies.
+ *
+ * Deliberately broad. A false positive costs one wasted replay whose payload simply
+ * yields no reply nodes; a false negative costs the entire tier experiment.
+ */
+export function isConversationOperation(operation: string): boolean {
+  return /tweetdetail|conversation|tweetresult/i.test(operation);
+}
+
 export function readCsrf(cookie: string): string | null {
   return cookie.match(/(?:^|;\s*)ct0=([^;]+)/)?.[1] ?? null;
 }

@@ -2,6 +2,8 @@ import {
   assessCapture,
   buildCaptureFile,
   captureFilename,
+  isConversationOperation,
+  parseGraphqlOperation,
   readCsrf,
   REPLAY_BATCH,
   REPLAY_PAUSE_MS,
@@ -38,6 +40,8 @@ function start(): void {
   let detailUrl: string | null = null;
   let detailHeaders: Record<string, string> | null = null;
   let busy = false;
+  /** Every GraphQL operation seen, so a miss is diagnosable instead of silent. */
+  const seenOps = new Map<string, number>();
 
   // --- the patch, installed before X's bundle exists -----------------------------
 
@@ -62,6 +66,29 @@ function start(): void {
     return out;
   };
 
+  /**
+   * One place both transports report into.
+   *
+   * X was observed loading a post page, replies on screen, without this ever matching on
+   * `fetch` alone. Either the conversation goes over XHR or the operation is named
+   * something else, so capture now watches both and records what it saw rather than
+   * failing quietly.
+   */
+  const noteRequest = (url: string, headers: Record<string, string>): void => {
+    const op = parseGraphqlOperation(url);
+    if (!op) return;
+    seenOps.set(op.operation, (seenOps.get(op.operation) ?? 0) + 1);
+
+    const a = headers['authorization'] ?? headers['Authorization'];
+    if (a) auth = a;
+
+    if (!detailUrl && isConversationOperation(op.operation)) {
+      detailUrl = url;
+      detailHeaders = headers;
+    }
+    render();
+  };
+
   /*
    * Bound to `window` deliberately, and this is load-bearing.
    *
@@ -78,18 +105,47 @@ function start(): void {
       // Never construct a Request from these arguments. Doing so marks the original
       // body as consumed and breaks the very request being observed.
       const url = typeof input === 'string' ? input : input instanceof URL ? input.href : (input as Request)?.url ?? '';
+      const headers = collectHeaders(input, init);
       const a = headerFrom(input, init, 'authorization');
-      if (a) auth = a;
-
-      if (url.includes('/TweetDetail') && !detailUrl) {
-        detailUrl = url;
-        detailHeaders = collectHeaders(input, init);
-        render();
-      }
+      if (a) headers['authorization'] = a;
+      noteRequest(url, headers);
     } catch {
       // Instrumentation must never break the page it is observing.
     }
     return origFetch(...args);
+  };
+
+  /*
+   * XHR as well as fetch. X mixes both, and the whole reason capture exists is that
+   * assuming which one carries a request turned out to be wrong once already.
+   */
+  const xhrOpen = XMLHttpRequest.prototype.open;
+  const xhrSetHeader = XMLHttpRequest.prototype.setRequestHeader;
+  const xhrSend = XMLHttpRequest.prototype.send;
+  interface TrackedXhr extends XMLHttpRequest {
+    __dwUrl?: string;
+    __dwHeaders?: Record<string, string>;
+  }
+
+  XMLHttpRequest.prototype.open = function (this: TrackedXhr, method: string, url: string | URL, ...rest: unknown[]) {
+    this.__dwUrl = String(url);
+    this.__dwHeaders = {};
+    return (xhrOpen as unknown as (...a: unknown[]) => void).call(this, method, url, ...rest);
+  };
+  XMLHttpRequest.prototype.setRequestHeader = function (this: TrackedXhr, name: string, value: string) {
+    if (this.__dwHeaders) this.__dwHeaders[name.toLowerCase()] = value;
+    return xhrSetHeader.call(this, name, value);
+  };
+  XMLHttpRequest.prototype.send = function (
+    this: TrackedXhr,
+    ...args: Parameters<XMLHttpRequest['send']>
+  ) {
+    try {
+      if (this.__dwUrl) noteRequest(this.__dwUrl, this.__dwHeaders ?? {});
+    } catch {
+      // Same rule as the fetch patch: never break the page being observed.
+    }
+    return xhrSend.apply(this, args);
   };
 
   // --- collection ----------------------------------------------------------------
@@ -193,6 +249,18 @@ function start(): void {
     const line = document.createElement('div');
     line.textContent = `Downweight capture: ${health.posts} posts, ${health.withReplies} with replies`;
     badge.appendChild(line);
+
+    if (!detailUrl && seenOps.size > 0) {
+      const ops = [...seenOps.entries()]
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 6)
+        .map(([name, n]) => `${name} x${n}`)
+        .join(', ');
+      const o = document.createElement('div');
+      o.style.cssText = 'color:#8aa0bd;margin-top:4px;word-break:break-word';
+      o.textContent = `GraphQL seen: ${ops}`;
+      badge.appendChild(o);
+    }
 
     for (const problem of health.problems) {
       const p = document.createElement('div');
