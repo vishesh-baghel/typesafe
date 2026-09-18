@@ -1,0 +1,25 @@
+/node_modules
+/.next/
+/out/
+/coverage
+/.cov
+
+# Extension and e2e build output
+/extension/dist
+/e2e/dist
+/test-results
+/playwright-report
+
+# Phase 1 working data. Both MUST stay ignored: the PRD rule is that no real post
+# content enters the repo, and these are exactly that. `pnpm fixtures` turns a capture
+# into a scrubbed fixture, and only the scrubbed version is committed.
+/captures
+/labels
+
+# env files
+.env*
+!.env.example
+
+*.tsbuildinfo
+next-env.d.ts
+.DS_Store
