@@ -14,7 +14,10 @@
     "experiment-body": "tsx --env-file=.env.local scripts/experiment-body.ts",
     "build-corpus": "tsx scripts/build-corpus.ts",
     "judge-corpus": "tsx --env-file=.env.local scripts/judge-corpus.ts",
-    "seed-matches": "tsx --env-file=.env.local scripts/seed-matches.ts"
+    "seed-matches": "tsx --env-file=.env.local scripts/seed-matches.ts",
+    "run-local": "tsx --env-file=.env.local scripts/run-local.ts",
+    "check-corpus": "tsx scripts/check-corpus.ts",
+    "safety-gate": "bash scripts/safety-gate.sh"
   },
   "dependencies": {
     "@tursodatabase/serverless": "^1.4.0",
@@ -24,6 +27,7 @@
     "react-dom": "19.2.8"
   },
   "devDependencies": {
+    "@googleapis/gmail": "^22.0.0",
     "@rolldown/binding-linux-x64-gnu": "^1.2.9",
     "@types/node": "^20",
     "@types/react": "^19",

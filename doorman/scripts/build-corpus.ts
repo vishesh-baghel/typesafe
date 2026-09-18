@@ -72,11 +72,11 @@ const DRAFTS: Draft[] = [
   {
     id: 'c-verify',
     sender: 'login@metrics.example',
-    subject: 'Confirm your email to finish setting up Metrics',
+    subject: 'Verify your address to activate Metrics',
     category: 'needs_action',
-    html: `<p>Confirm your email to finish creating your account.</p>
-      <p><a href="https://metrics.example.com/confirm">Confirm email</a></p>
-      <p>This link expires in 24 hours.</p>`,
+    html: `<p>Your workspace is reserved but stays inactive until the address on it is verified.</p>
+      <p><a href="https://metrics.example/verify">Verify address</a></p>
+      <p>The link stops working after 24 hours and a new one has to be requested.</p>`,
   },
 
   // ---------------------------------------------------------------- transaction alerts (9 more)
@@ -282,9 +282,10 @@ const DRAFTS: Draft[] = [
   {
     id: 'c-promo3',
     sender: 'hello@dataplane.example',
-    subject: 'A lot has changed since you last logged in',
+    subject: 'Plenty is new since your last visit',
     category: 'promotional',
-    html: `<p>Your agent builds it, we run it. Database, ORM and hosting, free to start.</p>`,
+    html: `<p>Managed storage, a query planner and hosting in one place. The starter tier is free
+      and needs no card.</p>`,
   },
   {
     id: 'c-promo4',
