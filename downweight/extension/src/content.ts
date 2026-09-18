@@ -42,7 +42,8 @@ function paint(): void {
 
     // Label controls go on every card, not only judged ones: disagreeing with "no tag"
     // is exactly as much of a verdict as disagreeing with one.
-    ensureLabelControls(card, (label) => void setLabel(post.id, label), labels.get(post.id) ?? null);
+    raw.set(post.id, post);
+    ensureLabelControls(card, post.id, (id, label) => void setLabel(id, label), labels.get(post.id) ?? null);
 
     const scored = known.get(post.id);
     if (!scored) continue;
@@ -78,18 +79,43 @@ function reportShare(judged: number, tagged: number): void {
   void chrome.storage.local.set({ _visibleJudged: judged, _visibleTagged: tagged });
 }
 
-/** Clicking the chosen label again clears it, so a misclick is one click to undo. */
+/**
+ * Clicking the chosen label again clears it, so a misclick is one click to undo.
+ *
+ * Deliberately does not require the post to have been judged. It used to, and that made
+ * every click on a not-yet-scored post do nothing at all, with no feedback: scroll faster
+ * than the model and the buttons appeared to break. A verdict belongs to the reader and
+ * is worth recording whenever they give it; the judgment is attached later if it arrives.
+ */
 async function setLabel(id: string, label: Label): Promise<void> {
   const post = raw.get(id);
-  const scored = known.get(id);
-  if (!post || !scored) return;
+  if (!post) return;
 
   const next = labels.get(id) === label ? null : label;
   if (next) labels.set(id, next);
   else labels.delete(id);
   paint();
 
-  await send({ kind: 'label', post, scored, label: next });
+  const res = await send({ kind: 'label', post, scored: known.get(id) ?? null, label: next });
+  if (res.kind === 'error') {
+    // Put the UI back rather than showing a verdict that was never stored.
+    if (next) labels.delete(id);
+    else labels.set(id, label);
+    paint();
+    console.warn('[downweight] label not saved:', res.reason);
+  }
+}
+
+/**
+ * Attach judgments to verdicts that were given before the model caught up, so a post
+ * labelled early still counts toward the agreement rate.
+ */
+async function backfillLabels(scoredPosts: readonly ScoredPost[]): Promise<void> {
+  for (const scored of scoredPosts) {
+    const label = labels.get(scored.id);
+    const post = raw.get(scored.id);
+    if (label && post) await send({ kind: 'label', post, scored, label });
+  }
 }
 
 /**
@@ -128,6 +154,7 @@ async function flush(): Promise<void> {
   }
   for (const post of res.posts) known.set(post.id, post);
   paint();
+  void backfillLabels(res.posts);
 }
 
 const queue = (post: RawPost): void => {

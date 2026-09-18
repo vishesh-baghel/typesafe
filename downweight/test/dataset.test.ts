@@ -118,6 +118,28 @@ describe('runGate', () => {
     expect(Math.abs(r.worstPair!.r)).toBeCloseTo(1, 6);
   });
 
+  it('counts posts labelled before the model reached them, rather than dropping them', () => {
+    /*
+     * These exist because requiring a judgment made clicks on unscored posts silently do
+     * nothing, which is how the buttons appeared to stop working. The verdict is still
+     * the reader's; it just cannot contribute to an agreement rate yet, so it is reported
+     * rather than quietly discarded.
+     */
+    const unjudged: LabelledPost = { post: rawPost({ id: '9' }), scored: null, label: 'hide', at: 0 };
+    const r = runGate([noise('1'), good('2'), unjudged], DEFAULT_WEIGHTS, DEFAULT_THRESHOLD);
+
+    expect(r.labelled).toBe(3);
+    expect(r.unjudged).toBe(1);
+    // The rate is over the two that could be judged, not diluted by the third.
+    expect(r.agreement).toBeCloseTo(1, 10);
+  });
+
+  it('does not correlate against a post with no judgment', () => {
+    const unjudged: LabelledPost = { post: rawPost({ id: '9' }), scored: null, label: 'hide', at: 0 };
+    expect(() => correlate([unjudged], 'bait', 'slop')).not.toThrow();
+    expect(correlate([unjudged], 'bait', 'slop')).toEqual({ r: 0, n: 0 });
+  });
+
   it('survives an empty dataset without dividing by zero', () => {
     const r = runGate([], DEFAULT_WEIGHTS, DEFAULT_THRESHOLD);
     expect(r.labelled).toBe(0);

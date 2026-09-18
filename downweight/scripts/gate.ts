@@ -43,7 +43,9 @@ function main() {
   console.log(`    agreed        ${r.agreed}/${r.labelled}  ${pct(r.agreement)}`);
   console.log(`    caught        ${r.caught}/${r.hideTotal} you marked hide`);
   console.log(`    over-tagged   ${r.overTagged}/${r.keepTotal} you marked keep`);
-  console.log(`    tagged        ${pct(r.taggedShare)} of the sample\n`);
+  console.log(`    tagged        ${pct(r.taggedShare)} of the sample`);
+  if (r.unjudged > 0) console.log(`    unjudged      ${r.unjudged} labelled before the model reached them`);
+  console.log('');
 
   console.log('  BEST THRESHOLD');
   console.log(`    ${r.bestThreshold.toFixed(2)} would agree ${pct(r.bestAgreement)}`);
@@ -63,7 +65,7 @@ function main() {
 
   console.log('\n  ANSWERABILITY');
   for (const key of DIM_KEYS) {
-    const n = posts.filter((p) => p.scored.scores[key]?.available).length;
+    const n = posts.filter((p) => p.scored?.scores[key]?.available).length;
     console.log(`    ${key.padEnd(6)} ${n}/${posts.length}`);
   }
 
@@ -73,7 +75,7 @@ function main() {
   for (const key of DIM_KEYS) {
     const counts = [0, 0, 0, 0, 0];
     for (const p of posts) {
-      const d = p.scored.scores[key];
+      const d = p.scored?.scores[key];
       if (d?.available) counts[Math.round(d.raw)] = (counts[Math.round(d.raw)] ?? 0) + 1;
     }
     const never = counts.map((c, i) => (c === 0 ? i : -1)).filter((i) => i >= 0);

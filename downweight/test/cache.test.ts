@@ -197,7 +197,7 @@ describe('labels: the reader\'s verdicts, kept apart from the model\'s', () => {
     // Re-scoring later would compare their verdict against a different answer than the
     // one they were reacting to.
     await putLabel(db, record('1', 'hide'));
-    expect((await allLabels(db))[0]!.scored.scores.bait.value).toBeCloseTo(0.6, 10);
+    expect((await allLabels(db))[0]!.scored!.scores.bait.value).toBeCloseTo(0.6, 10);
   });
 
   it('is untouched by clearing the judgment cache', async () => {
