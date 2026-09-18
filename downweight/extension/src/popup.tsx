@@ -2,12 +2,13 @@ import { useEffect, useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import { DIMS, matchingPreset, PRESETS, type Weights } from '../../lib/composite';
 import { isWorkerResponse, type Diagnostics } from './messages';
-import { DEFAULTS, loadSettings, saveSettings, type Settings } from './settings';
+import { DEFAULTS, loadSettings, loadVisibleShare, saveSettings, type Settings } from './settings';
 
 function Popup() {
   const [s, setS] = useState<Settings>(DEFAULTS);
   const [loaded, setLoaded] = useState(false);
   const [diag, setDiag] = useState<Diagnostics | null>(null);
+  const [share, setShare] = useState<{ judged: number; tagged: number } | null>(null);
 
   useEffect(() => {
     void loadSettings().then((next) => {
@@ -16,6 +17,7 @@ function Popup() {
     });
     // Ask the worker how scoring is actually going. Without this the popup can only show
     // what was configured, never whether any of it worked.
+    void loadVisibleShare().then(setShare);
     void chrome.runtime
       .sendMessage({ kind: 'settings' })
       .then((r: unknown) => {
@@ -50,8 +52,23 @@ function Popup() {
         ) : (
           <span>
             {diag.judged} judged, {diag.cached} from cache
-            {diag.failed > 0 ? `, ${diag.failed} failed` : ''}. No tags means nothing crossed
-            your threshold.
+            {diag.failed > 0 ? `, ${diag.failed} failed` : ''}.
+            {share && share.judged > 0 ? (
+              <>
+                {' '}
+                <strong>
+                  {share.tagged}/{share.judged}
+                </strong>{' '}
+                of the last screenful tagged.
+                {share.tagged === share.judged
+                  ? ' Everything is tagged, so the tag says nothing. Lower Aggression.'
+                  : share.tagged === 0
+                    ? ' Nothing crossed. Raise Aggression.'
+                    : ''}
+              </>
+            ) : (
+              ' No tags means nothing crossed your threshold.'
+            )}
           </span>
         )}
       </div>

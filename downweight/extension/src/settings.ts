@@ -48,6 +48,15 @@ export async function loadSettings(): Promise<Settings> {
   return normalise(raw);
 }
 
+/** Bookkeeping the content script writes back. Keys are underscore-prefixed so
+ *  `normalise` ignores them and the storage listener can tell them from real changes. */
+export async function loadVisibleShare(): Promise<{ judged: number; tagged: number }> {
+  const raw = (await chrome.storage.local.get(['_visibleJudged', '_visibleTagged'])) as Record<string, unknown>;
+  const judged = typeof raw['_visibleJudged'] === 'number' ? raw['_visibleJudged'] : 0;
+  const tagged = typeof raw['_visibleTagged'] === 'number' ? raw['_visibleTagged'] : 0;
+  return { judged, tagged };
+}
+
 export async function saveSettings(patch: Partial<Settings>): Promise<Settings> {
   const next = normalise({ ...(await loadSettings()), ...patch });
   await chrome.storage.local.set(next);

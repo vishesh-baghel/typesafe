@@ -30,20 +30,43 @@ const send = (msg: ContentRequest): Promise<WorkerResponse> =>
 
 /** Re-applies verdicts from cache. No network, which is the whole claim. */
 function paint(): void {
+  let judged = 0;
+  let tagged = 0;
+
   for (const card of Array.from(document.querySelectorAll<HTMLElement>(SELECTORS.card))) {
     const post = extractPost(card);
     const scored = post && known.get(post.id);
     if (!scored) continue;
+    judged++;
 
     const v = verdict(scored, settings.weights, settings.threshold);
     if (v.tagged && v.tag) {
-      applyTag(card, v.tag, `scored on ${v.answeredCount} of 6`);
+      tagged++;
+      applyTag(card, v.tag, `${v.tag} · scored on ${v.answeredCount} of 6`);
       setDimmed(card, settings.dimming);
     } else {
       clearTag(card);
       setDimmed(card, false);
     }
   }
+
+  reportShare(judged, tagged);
+}
+
+/**
+ * How much of what is on screen is tagged.
+ *
+ * A tag only carries information if it is selective. At a threshold low enough to tag
+ * everything the extension is just adding a word to every post, which reads as "the
+ * classification is wrong" when it is really "the threshold is wrong". This is the number
+ * that tells those two apart, so the popup shows it.
+ */
+let lastShare = '';
+function reportShare(judged: number, tagged: number): void {
+  const next = `${tagged}/${judged}`;
+  if (next === lastShare) return;
+  lastShare = next;
+  void chrome.storage.local.set({ _visibleJudged: judged, _visibleTagged: tagged });
 }
 
 async function flush(): Promise<void> {
@@ -110,7 +133,12 @@ async function refreshSettings(): Promise<void> {
   paint();
 }
 
-chrome.storage.onChanged.addListener(() => void refreshSettings());
+chrome.storage.onChanged.addListener((changes) => {
+  // Ignore our own bookkeeping. Reacting to it would mean paint -> write -> listener ->
+  // paint, which is the same self-triggering loop that froze capture mode.
+  if (Object.keys(changes).every((k) => k.startsWith('_'))) return;
+  void refreshSettings();
+});
 
 enable(document);
 void refreshSettings();
