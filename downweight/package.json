@@ -1,0 +1,46 @@
+{
+  "name": "downweight",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "build:ext": "tsup",
+    "watch:ext": "tsup --watch",
+    "lint": "eslint",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run --coverage",
+    "test:watch": "vitest",
+    "test:e2e": "tsup && playwright test",
+    "smoke": "tsx --env-file=.env.local scripts/smoke.ts",
+    "gate": "tsx --env-file=.env.local scripts/gate.ts",
+    "tiers": "tsx --env-file=.env.local scripts/experiment-tiers.ts",
+    "correlate": "tsx scripts/correlate.ts",
+    "fixtures": "tsx scripts/build-fixtures.ts"
+  },
+  "dependencies": {
+    "@typesafe-ai/sdk": "^0.6.0",
+    "next": "16.3.5",
+    "react": "19.2.8",
+    "react-dom": "19.2.8"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.50.0",
+    "@rolldown/binding-linux-x64-gnu": "^1.2.9",
+    "@types/chrome": "^0.0.300",
+    "@types/node": "^20",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "@vitest/coverage-v8": "^5.0.1",
+    "eslint": "^9",
+    "eslint-config-next": "16.3.5",
+    "fake-indexeddb": "^6.0.0",
+    "jsdom": "^26.0.0",
+    "tsup": "^8.3.0",
+    "tsx": "^4.23.13",
+    "typescript": "^5",
+    "vitest": "^5.0.1"
+  },
+  "packageManager": "pnpm@10.18.2"
+}

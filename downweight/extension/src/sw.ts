@@ -1,0 +1,76 @@
+import { getMany, openCache, putScored } from '../../lib/cache';
+import { mapLimit } from '../../lib/concurrency';
+import { makeClient, SCORE_CONCURRENCY, scorePost } from '../../lib/jev';
+import type { RawPost, ScoredPost } from '../../lib/types';
+import { errorResponse, isContentRequest, type WorkerResponse } from './messages';
+import { loadSettings } from './settings';
+
+/**
+ * The only place a credential exists.
+ *
+ * The content script runs inside a page X controls, so it never holds the key and never
+ * talks to api.typesafe.ai. It sends extracted posts here and gets numbers back. That
+ * split is the reason "your key never leaves your browser" is structurally true rather
+ * than a promise.
+ */
+
+let dbPromise: Promise<IDBDatabase> | null = null;
+const db = () => (dbPromise ??= openCache());
+
+async function scoreBatch(posts: RawPost[]): Promise<ScoredPost[]> {
+  const settings = await loadSettings();
+  if (!settings.apiKey) throw new Error('No API key set. Open the Downweight popup and paste one.');
+
+  const cache = await db();
+  const cached = await getMany(cache, posts.map((p) => p.id));
+
+  // Only pay for what is not already known. X re-serves the same posts constantly, so on
+  // a normal scrolling session this is most of them.
+  const todo = posts.filter((p) => !cached.has(p.id));
+  const client = makeClient(settings.apiKey);
+
+  const fresh = await mapLimit(todo, SCORE_CONCURRENCY, async (post) => {
+    try {
+      const out = await scorePost(post, client);
+      await putScored(cache, out);
+      return out;
+    } catch {
+      // One post failing must not fail the batch. An unscored post is simply untagged,
+      // which is the same thing the reader would see with the extension off.
+      return null;
+    }
+  });
+
+  return [...cached.values(), ...fresh.filter((p): p is ScoredPost => p !== null)];
+}
+
+chrome.runtime.onMessage.addListener((message: unknown, _sender, sendResponse) => {
+  if (!isContentRequest(message)) {
+    sendResponse(errorResponse('unrecognised message'));
+    return false;
+  }
+
+  void (async () => {
+    try {
+      let response: WorkerResponse;
+      if (message.kind === 'score') {
+        response = { kind: 'scored', posts: await scoreBatch(message.posts) };
+      } else {
+        const s = await loadSettings();
+        response = {
+          kind: 'settings',
+          hasKey: s.apiKey !== '',
+          weights: s.weights,
+          threshold: s.threshold,
+          dimming: s.dimming && s.enabled,
+        };
+      }
+      sendResponse(response);
+    } catch (err) {
+      sendResponse(errorResponse(err instanceof Error ? err.message : String(err)));
+    }
+  })();
+
+  // Keeps the message channel open for the async reply above.
+  return true;
+});
