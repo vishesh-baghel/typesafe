@@ -29,6 +29,7 @@
     "@playwright/test": "^1.50.0",
     "@rolldown/binding-linux-x64-gnu": "^1.2.9",
     "@types/chrome": "^0.0.300",
+    "@types/jsdom": "^30.0.0",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
