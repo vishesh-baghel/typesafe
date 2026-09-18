@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import { DIMS, matchingPreset, PRESETS, type Weights } from '../../lib/composite';
+import { runGate } from '../../lib/dataset';
+import type { Dataset } from '../../lib/dataset';
 import { isWorkerResponse, type Diagnostics } from './messages';
 import { DEFAULTS, loadSettings, loadVisibleShare, saveSettings, type Settings } from './settings';
 
@@ -9,6 +11,7 @@ function Popup() {
   const [loaded, setLoaded] = useState(false);
   const [diag, setDiag] = useState<Diagnostics | null>(null);
   const [share, setShare] = useState<{ judged: number; tagged: number } | null>(null);
+  const [gate, setGate] = useState<ReturnType<typeof runGate> | null>(null);
 
   useEffect(() => {
     void loadSettings().then((next) => {
@@ -29,6 +32,31 @@ function Popup() {
   const patch = (p: Partial<Settings>) => {
     setS((prev) => ({ ...prev, ...p }));
     void saveSettings(p);
+  };
+
+  /**
+   * The gate runs here, not in a script.
+   *
+   * Every judgment and every verdict is already on this machine. Making the reader export
+   * a file and run Node to learn whether the thing agrees with them was a ritual, not a
+   * requirement. `pnpm gate` still exists for the writeup and calls the same function.
+   */
+  const analyse = async () => {
+    const res = await chrome.runtime.sendMessage({ kind: 'dataset' });
+    if (!isWorkerResponse(res) || res.kind !== 'dataset') return null;
+    const data = res.dataset as Dataset;
+    setGate(data.posts.length ? runGate(data.posts, s.weights, s.threshold) : null);
+    return data;
+  };
+
+  const exportDataset = async () => {
+    const data = await analyse();
+    if (!data) return;
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = `downweight-${data.exportedAt.replace(/[:.]/g, '-')}.json`;
+    a.click();
   };
 
   if (!loaded) return <div style={{ padding: 16 }}>Loading…</div>;
@@ -72,6 +100,44 @@ function Popup() {
           </span>
         )}
       </div>
+
+      {diag && diag.labelled > 0 && (
+        <div style={{ fontSize: 11, border: '1px solid #ddd', borderRadius: 4, padding: 8, display: 'grid', gap: 6 }}>
+          <div>
+            <strong>{diag.labelled}</strong> posts labelled
+            {diag.labelled < 100 ? ` · ${100 - diag.labelled} to go for a gate run` : ' · enough for the gate'}
+          </div>
+          {gate ? (
+            <div style={{ color: '#555' }}>
+              Agrees with you {(gate.agreement * 100).toFixed(0)}% at {s.threshold.toFixed(2)}.
+              {Math.abs(gate.bestThreshold - s.threshold) > 0.02 && (
+                <>
+                  {' '}
+                  Best would be <strong>{gate.bestThreshold.toFixed(2)}</strong> at{' '}
+                  {(gate.bestAgreement * 100).toFixed(0)}%.
+                </>
+              )}
+              {gate.worstPair && Math.abs(gate.worstPair.r) >= 0.8 && (
+                <>
+                  {' '}
+                  <span style={{ color: '#b23' }}>
+                    {gate.worstPair.a} and {gate.worstPair.b} may be one dimension (r=
+                    {gate.worstPair.r.toFixed(2)}).
+                  </span>
+                </>
+              )}
+            </div>
+          ) : null}
+          <div style={{ display: 'flex', gap: 6 }}>
+            <button type="button" onClick={() => void analyse()} style={{ font: 'inherit', fontSize: 11 }}>
+              Check agreement
+            </button>
+            <button type="button" onClick={() => void exportDataset()} style={{ font: 'inherit', fontSize: 11 }}>
+              Export
+            </button>
+          </div>
+        </div>
+      )}
 
       <label style={{ display: 'grid', gap: 4 }}>
         <span style={{ fontSize: 11, opacity: 0.7 }}>TypeSafe API key</span>

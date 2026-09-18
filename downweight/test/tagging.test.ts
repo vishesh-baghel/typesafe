@@ -3,6 +3,10 @@ import { beforeEach, describe, expect, it } from 'vitest';
 import {
   applyTag,
   CARD_CLASS,
+  CHOSEN_CLASS,
+  ensureLabelControls,
+  LABEL_CLASS,
+  OVERLAY_CLASS,
   clearTag,
   DIM_CLASS,
   disable,
@@ -165,12 +169,18 @@ describe('applyTag', () => {
 });
 
 describe('clearTag', () => {
-  it('removes the tag and the positioning class', () => {
+  it('removes the verdict but leaves the overlay, which is not a verdict', () => {
+    // The label buttons live in the same overlay and outlive any particular judgment.
+    // Tearing the overlay down here would make them vanish whenever a post stopped
+    // crossing the threshold, which is exactly when you might want to disagree with it.
     const el = mount(card());
+    ensureLabelControls(el, () => {});
     applyTag(el, 'bait');
     clearTag(el);
+
     expect(el.querySelector(`.${TAG_CLASS}`)).toBeNull();
-    expect(el.classList.contains(CARD_CLASS)).toBe(false);
+    expect(el.querySelectorAll(`.${LABEL_CLASS}`)).toHaveLength(2);
+    expect(el.classList.contains(CARD_CLASS)).toBe(true);
   });
 
   it('is safe on a card that was never tagged', () => {
@@ -255,5 +265,85 @@ describe('teardown leaves a normal timeline behind', () => {
     applyTag(el, 'bait');
     teardown(document.body);
     expect(document.querySelectorAll(`.${TAG_CLASS}`)).toHaveLength(0);
+  });
+});
+
+describe('ensureLabelControls', () => {
+  it('adds keep and hide', () => {
+    const el = mount(card());
+    ensureLabelControls(el, () => {});
+    expect([...el.querySelectorAll(`.${LABEL_CLASS}`)].map((b) => b.textContent)).toEqual(['keep', 'hide']);
+  });
+
+  it('is idempotent, so a repaint cannot stack buttons', () => {
+    const el = mount(card());
+    for (let i = 0; i < 5; i++) ensureLabelControls(el, () => {});
+    expect(el.querySelectorAll(`.${LABEL_CLASS}`)).toHaveLength(2);
+  });
+
+  it('emits no mutation when re-applied unchanged', async () => {
+    // Same rule as the tag: the content script repaints from a MutationObserver, so a
+    // paint that mutates restarts the loop.
+    const el = mount(card());
+    ensureLabelControls(el, () => {}, 'hide');
+
+    const records: MutationRecord[] = [];
+    const obs = new MutationObserver((rs) => records.push(...rs));
+    obs.observe(el, { childList: true, subtree: true, attributes: true, characterData: true });
+    ensureLabelControls(el, () => {}, 'hide');
+    ensureLabelControls(el, () => {}, 'hide');
+    await new Promise((r) => setTimeout(r, 0));
+    obs.disconnect();
+
+    expect(records).toEqual([]);
+  });
+
+  it('reports the click', () => {
+    const el = mount(card());
+    const seen: string[] = [];
+    ensureLabelControls(el, (l) => seen.push(l));
+    el.querySelector<HTMLButtonElement>(`.${LABEL_CLASS}[data-dw="hide"]`)!.click();
+    el.querySelector<HTMLButtonElement>(`.${LABEL_CLASS}[data-dw="keep"]`)!.click();
+    expect(seen).toEqual(['hide', 'keep']);
+  });
+
+  it('does not let a label click navigate to the post', () => {
+    // Every card on X is a link. Without preventDefault this opens the post instead.
+    const el = mount(card());
+    let navigated = false;
+    el.addEventListener('click', (e) => {
+      if (!e.defaultPrevented) navigated = true;
+    });
+    ensureLabelControls(el, () => {});
+    el.querySelector<HTMLButtonElement>(`.${LABEL_CLASS}[data-dw="keep"]`)!.click();
+    expect(navigated).toBe(false);
+  });
+
+  it('marks the chosen label, and only that one', () => {
+    const el = mount(card());
+    ensureLabelControls(el, () => {}, 'keep');
+    const keep = el.querySelector(`.${LABEL_CLASS}[data-dw="keep"]`)!;
+    const hide = el.querySelector(`.${LABEL_CLASS}[data-dw="hide"]`)!;
+    expect(keep.classList.contains(CHOSEN_CLASS)).toBe(true);
+    expect(hide.classList.contains(CHOSEN_CLASS)).toBe(false);
+    expect(keep.getAttribute('aria-pressed')).toBe('true');
+  });
+
+  it('moves the mark when the verdict changes', () => {
+    const el = mount(card());
+    ensureLabelControls(el, () => {}, 'keep');
+    ensureLabelControls(el, () => {}, 'hide');
+    expect(el.querySelector(`.${LABEL_CLASS}[data-dw="keep"]`)!.classList.contains(CHOSEN_CLASS)).toBe(false);
+    expect(el.querySelector(`.${LABEL_CLASS}[data-dw="hide"]`)!.classList.contains(CHOSEN_CLASS)).toBe(true);
+  });
+
+  it('shares one overlay with the tag', () => {
+    const el = mount(card());
+    ensureLabelControls(el, () => {});
+    applyTag(el, 'bait');
+    expect(el.querySelectorAll(`.${OVERLAY_CLASS}`)).toHaveLength(1);
+    // keep / hide / verdict, in that order.
+    const row = [...el.querySelector(`.${OVERLAY_CLASS}`)!.children].map((c) => c.textContent);
+    expect(row).toEqual(['keep', 'hide', 'bait']);
   });
 });

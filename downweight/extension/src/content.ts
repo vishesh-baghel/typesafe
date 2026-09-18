@@ -1,6 +1,7 @@
 import { extractPost, SELECTORS } from '../../lib/extract';
+import { readConversation } from '../../lib/replies';
 import { verdict } from '../../lib/policy';
-import { applyTag, clearTag, enable, setDimmed, teardown } from '../../lib/tagging';
+import { applyTag, clearTag, enable, ensureLabelControls, type Label, setDimmed, teardown } from '../../lib/tagging';
 import type { RawPost, ScoredPost } from '../../lib/types';
 import { isWorkerResponse, type ContentRequest, type WorkerResponse } from './messages';
 import { DEFAULTS, type Settings } from './settings';
@@ -19,6 +20,8 @@ const BATCH_MS = 250;
 
 let settings: Settings = { ...DEFAULTS };
 const known = new Map<string, ScoredPost>();
+const labels = new Map<string, Label>();
+const raw = new Map<string, RawPost>();
 const seen = new WeakSet<Element>();
 const pending = new Map<string, RawPost>();
 let flushTimer: number | undefined;
@@ -35,7 +38,13 @@ function paint(): void {
 
   for (const card of Array.from(document.querySelectorAll<HTMLElement>(SELECTORS.card))) {
     const post = extractPost(card);
-    const scored = post && known.get(post.id);
+    if (!post) continue;
+
+    // Label controls go on every card, not only judged ones: disagreeing with "no tag"
+    // is exactly as much of a verdict as disagreeing with one.
+    ensureLabelControls(card, (label) => void setLabel(post.id, label), labels.get(post.id) ?? null);
+
+    const scored = known.get(post.id);
     if (!scored) continue;
     judged++;
 
@@ -69,10 +78,47 @@ function reportShare(judged: number, tagged: number): void {
   void chrome.storage.local.set({ _visibleJudged: judged, _visibleTagged: tagged });
 }
 
+/** Clicking the chosen label again clears it, so a misclick is one click to undo. */
+async function setLabel(id: string, label: Label): Promise<void> {
+  const post = raw.get(id);
+  const scored = known.get(id);
+  if (!post || !scored) return;
+
+  const next = labels.get(id) === label ? null : label;
+  if (next) labels.set(id, next);
+  else labels.delete(id);
+  paint();
+
+  await send({ kind: 'label', post, scored, label: next });
+}
+
+/**
+ * On a post page the replies are already rendered, so `rage_bait` becomes answerable for
+ * free. This is the whole reason the extension no longer touches X's network: the only
+ * thing the old GraphQL replay bought was replies for posts the reader never opened.
+ *
+ * The cache accepts this as an upgrade and refuses the reverse, so a post judged on five
+ * dimensions in the timeline becomes six once opened, and never degrades back.
+ */
+function conversationUpgrade(): RawPost | null {
+  const convo = readConversation(document, location.pathname);
+  if (!convo || convo.replies.length === 0) return null;
+
+  const post = raw.get(convo.focalId);
+  if (!post || post.replies !== null) return null;
+
+  const upgraded = { ...post, replies: convo.replies };
+  raw.set(convo.focalId, upgraded);
+  return upgraded;
+}
+
 async function flush(): Promise<void> {
   flushTimer = undefined;
   const batch = [...pending.values()];
   pending.clear();
+
+  const upgrade = conversationUpgrade();
+  if (upgrade) batch.push(upgrade);
   if (batch.length === 0) return;
 
   const res = await send({ kind: 'score', posts: batch });
@@ -85,6 +131,7 @@ async function flush(): Promise<void> {
 }
 
 const queue = (post: RawPost): void => {
+  raw.set(post.id, post);
   if (known.has(post.id)) return;
   pending.set(post.id, post);
   flushTimer ??= setTimeout(() => void flush(), BATCH_MS) as unknown as number;
@@ -121,6 +168,14 @@ function scan(): void {
   paint();
 }
 
+async function refreshLabels(): Promise<void> {
+  const res = await send({ kind: 'labels' });
+  if (res.kind !== 'labels') return;
+  labels.clear();
+  for (const [id, label] of Object.entries(res.labels)) labels.set(id, label);
+  paint();
+}
+
 async function refreshSettings(): Promise<void> {
   const res = await send({ kind: 'settings' });
   if (res.kind !== 'settings') return;
@@ -142,6 +197,16 @@ chrome.storage.onChanged.addListener((changes) => {
 
 enable(document);
 void refreshSettings();
+void refreshLabels();
+
+// A post page renders its replies, so revisit the focal post once they are there.
+let lastPath = location.pathname;
+setInterval(() => {
+  if (location.pathname === lastPath) return;
+  lastPath = location.pathname;
+  const upgrade = conversationUpgrade();
+  if (upgrade) void flush();
+}, 1500);
 new MutationObserver(() => scan()).observe(document.body, { childList: true, subtree: true });
 scan();
 

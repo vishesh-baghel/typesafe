@@ -14,11 +14,7 @@
     "test:watch": "vitest",
     "test:e2e": "tsup && playwright test",
     "smoke": "tsx --env-file=.env.local scripts/smoke.ts",
-    "gate": "tsx --env-file=.env.local scripts/gate.ts",
-    "tiers": "tsx --env-file=.env.local scripts/experiment-tiers.ts",
-    "correlate": "tsx scripts/correlate.ts",
-    "fixtures": "tsx scripts/build-fixtures.ts",
-    "capture:check": "tsx scripts/inspect-capture.ts"
+    "gate": "tsx --env-file=.env.local scripts/gate.ts"
   },
   "dependencies": {
     "@typesafe-ai/sdk": "^0.6.0",

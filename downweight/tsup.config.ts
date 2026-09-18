@@ -18,10 +18,6 @@ export default defineConfig([
       sw: 'extension/src/sw.ts',
       content: 'extension/src/content.ts',
       popup: 'extension/src/popup.tsx',
-      // MAIN world, document_start. Must be a separate bundle from content.ts: it runs
-      // in a different world and at a different time, and sharing a chunk between the
-      // two would fail to resolve.
-      'capture-main': 'extension/src/capture-main.ts',
     },
     outDir: 'extension/dist',
     format: ['esm'],

@@ -1,8 +1,10 @@
-import type { EvidenceTier, ScoredPost } from './types';
+import type { Label } from './tagging';
+import type { EvidenceTier, RawPost, ScoredPost } from './types';
 
 export const DB_NAME = 'downweight';
-export const DB_VERSION = 1;
+export const DB_VERSION = 2;
 export const STORE = 'scores';
+export const LABEL_STORE = 'labels';
 
 export interface CacheEntry {
   post: ScoredPost;
@@ -23,6 +25,11 @@ export function openCache(factory: IDBFactory = indexedDB): Promise<IDBDatabase>
     req.onupgradeneeded = () => {
       const db = req.result;
       if (!db.objectStoreNames.contains(STORE)) db.createObjectStore(STORE, { keyPath: 'post.id' });
+      // v2. The reader's own verdicts, kept separately from the model's: they outlive any
+      // particular judgment, and clearing one must never clear the other.
+      if (!db.objectStoreNames.contains(LABEL_STORE)) {
+        db.createObjectStore(LABEL_STORE, { keyPath: 'post.id' });
+      }
     };
     req.onsuccess = () => resolve(req.result);
     req.onerror = () => reject(req.error ?? new Error('indexedDB open failed'));
@@ -81,4 +88,27 @@ export async function putScored(db: IDBDatabase, post: ScoredPost): Promise<bool
 export async function clearCache(db: IDBDatabase): Promise<void> {
   const tx = db.transaction(STORE, 'readwrite');
   await promisify(tx.objectStore(STORE).clear());
+}
+
+/** One post the reader gave a verdict on, with the judgment that was on screen at the time. */
+export interface LabelRecord {
+  post: RawPost;
+  scored: ScoredPost;
+  label: Label;
+  at: number;
+}
+
+export async function putLabel(db: IDBDatabase, record: LabelRecord): Promise<void> {
+  const tx = db.transaction(LABEL_STORE, 'readwrite');
+  await promisify(tx.objectStore(LABEL_STORE).put(record));
+}
+
+export async function removeLabel(db: IDBDatabase, id: string): Promise<void> {
+  const tx = db.transaction(LABEL_STORE, 'readwrite');
+  await promisify(tx.objectStore(LABEL_STORE).delete(id));
+}
+
+export async function allLabels(db: IDBDatabase): Promise<LabelRecord[]> {
+  const tx = db.transaction(LABEL_STORE, 'readonly');
+  return promisify(tx.objectStore(LABEL_STORE).getAll() as IDBRequest<LabelRecord[]>);
 }

@@ -1,3 +1,5 @@
+import type { Dataset } from '../../lib/dataset';
+import type { Label } from '../../lib/tagging';
 import type { RawPost, ScoredPost } from '../../lib/types';
 
 /**
@@ -10,7 +12,10 @@ import type { RawPost, ScoredPost } from '../../lib/types';
  */
 export type ContentRequest =
   | { kind: 'score'; posts: RawPost[] }
-  | { kind: 'settings' };
+  | { kind: 'settings' }
+  | { kind: 'label'; post: RawPost; scored: ScoredPost; label: Label | null }
+  | { kind: 'labels' }
+  | { kind: 'dataset' };
 
 /** What the worker knows about how scoring is actually going. */
 export interface Diagnostics {
@@ -18,6 +23,7 @@ export interface Diagnostics {
   failed: number;
   cached: number;
   lastError: string | null;
+  labelled: number;
 }
 
 export type WorkerResponse =
@@ -30,13 +36,17 @@ export type WorkerResponse =
       dimming: boolean;
       diagnostics: Diagnostics;
     }
+  | { kind: 'labels'; labels: Record<string, Label> }
+  | { kind: 'dataset'; dataset: Dataset }
+  | { kind: 'ok' }
   | { kind: 'error'; reason: string };
 
 export const isContentRequest = (v: unknown): v is ContentRequest => {
   if (typeof v !== 'object' || v === null) return false;
   const kind = (v as { kind?: unknown }).kind;
   if (kind === 'score') return Array.isArray((v as { posts?: unknown }).posts);
-  return kind === 'settings';
+  if (kind === 'label') return typeof (v as { post?: { id?: unknown } }).post?.id === 'string';
+  return kind === 'settings' || kind === 'labels' || kind === 'dataset';
 };
 
 export const isWorkerResponse = (v: unknown): v is WorkerResponse => {
@@ -45,7 +55,9 @@ export const isWorkerResponse = (v: unknown): v is WorkerResponse => {
   if (kind === 'scored') return Array.isArray((v as { posts?: unknown }).posts);
   if (kind === 'settings') return typeof (v as { hasKey?: unknown }).hasKey === 'boolean';
   if (kind === 'error') return typeof (v as { reason?: unknown }).reason === 'string';
-  return false;
+  if (kind === 'labels') return typeof (v as { labels?: unknown }).labels === 'object';
+  if (kind === 'dataset') return typeof (v as { dataset?: unknown }).dataset === 'object';
+  return kind === 'ok';
 };
 
 /** Every failure crosses the boundary as data. A rejected promise here just loses the reason. */

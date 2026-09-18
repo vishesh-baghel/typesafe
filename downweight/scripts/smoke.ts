@@ -8,9 +8,10 @@
  * here in two seconds instead of halfway through a hundred-post gate run.
  */
 import { LEVELS } from '../lib/questions';
+
+const bar = (v: number, width = 20) => '█'.repeat(Math.round(v * width)).padEnd(width, '·');
 import { askedFor, buildState, scorePost } from '../lib/jev';
 import { DIM_KEYS, QUESTION_ID, type RawPost } from '../lib/types';
-import { bar } from './capture-io';
 
 const POST: RawPost = {
   id: 'smoke-1',
