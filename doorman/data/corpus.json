@@ -1,0 +1,371 @@
+[
+  {
+    "id": "c-deploy",
+    "sender": "notifications@deployhost.example",
+    "senderDomain": "deployhost.example",
+    "subject": "Production deployment failed for storefront-web",
+    "bodyText": "Hello, riverbend.\n\nThe production deployment for storefront-web failed at\ncommit 4f2a119.\nError: build exceeded memory limit (2048 MB)\n\nYour last successful deployment is still serving traffic.",
+    "isReplyToRecipient": false,
+    "category": "needs_action"
+  },
+  {
+    "id": "c-declined",
+    "sender": "alerts@northbank.example",
+    "senderDomain": "northbank.example",
+    "subject": "Card ending 4417 was declined",
+    "bodyText": "Dear customer,\n\nA recurring charge of $89.00 to CLOUDHOST INC was\ndeclined on 16/09/26 because the card on file has expired.\n\nThe merchant will retry once. Update your card to avoid interruption.",
+    "isReplyToRecipient": false,
+    "category": "transaction_alert"
+  },
+  {
+    "id": "c-domain",
+    "sender": "billing@domainkeeper.example",
+    "senderDomain": "domainkeeper.example",
+    "subject": "riverbend.example.com expires in 6 days",
+    "bodyText": "Your domain riverbend.example.com expires on 24 September 2026.\n\nAuto-renew is off . If it lapses the domain enters a 30-day redemption period and\na restore fee applies.",
+    "isReplyToRecipient": false,
+    "category": "needs_action"
+  },
+  {
+    "id": "c-ci",
+    "sender": "notifications@repohost.example",
+    "senderDomain": "repohost.example",
+    "subject": "[riverbend/storefront] CI failed on main: 3 jobs",
+    "bodyText": "Workflow CI failed on main .\n\nlint - failed in 12s\n\ntypecheck - failed in 41s\n\ntest - cancelled\n\nmain is red. Deploys are blocked until this is green.",
+    "isReplyToRecipient": false,
+    "category": "needs_action"
+  },
+  {
+    "id": "c-verify",
+    "sender": "login@metrics.example",
+    "senderDomain": "metrics.example",
+    "subject": "Confirm your email to finish setting up Metrics",
+    "bodyText": "Confirm your email to finish creating your account.\n\nConfirm email\n\nThis link expires in 24 hours.",
+    "isReplyToRecipient": false,
+    "category": "needs_action"
+  },
+  {
+    "id": "c-txn1",
+    "sender": "alerts@northbank.example",
+    "senderDomain": "northbank.example",
+    "subject": "Card ending 4417: $12.40 at GREENLEAF CAFE",
+    "bodyText": "A purchase of $12.40 was made at GREENLEAF CAFE on 17/09/26.\n\nAvailable balance: $2,184.02.",
+    "isReplyToRecipient": false,
+    "category": "transaction_alert"
+  },
+  {
+    "id": "c-txn2",
+    "sender": "alerts@northbank.example",
+    "senderDomain": "northbank.example",
+    "subject": "Transfer of $1,500.00 completed",
+    "bodyText": "Your transfer of $1,500.00 to SAVINGS ****9921 completed on 16/09/26.\n\nNo action is needed.",
+    "isReplyToRecipient": false,
+    "category": "transaction_alert"
+  },
+  {
+    "id": "c-txn3",
+    "sender": "noreply@paylink.example",
+    "senderDomain": "paylink.example",
+    "subject": "You received $340.00 from Harbour Studio",
+    "bodyText": "$340.00 from Harbour Studio has landed in your balance.\n\nIt will be paid out on the next scheduled payout.",
+    "isReplyToRecipient": false,
+    "category": "transaction_alert"
+  },
+  {
+    "id": "c-txn4",
+    "sender": "statements@northbank.example",
+    "senderDomain": "northbank.example",
+    "subject": "Your September statement is ready",
+    "bodyText": "Your statement for the period 01/09/26 to 30/09/26 is ready to view.",
+    "isReplyToRecipient": false,
+    "category": "transaction_alert"
+  },
+  {
+    "id": "c-txn5",
+    "sender": "alerts@brokerline.example",
+    "senderDomain": "brokerline.example",
+    "subject": "Portfolio summary as of 15-Sep-2026",
+    "bodyText": "Invested value: $4,210.00. Market value: $4,388.20. Unrealised gain: +$178.20 (4.2%).",
+    "isReplyToRecipient": false,
+    "category": "transaction_alert"
+  },
+  {
+    "id": "c-txn6",
+    "sender": "alerts@northbank.example",
+    "senderDomain": "northbank.example",
+    "subject": "Direct debit of $42.00 to CITY UTILITIES",
+    "bodyText": "A direct debit of $42.00 to CITY UTILITIES was taken on 15/09/26.",
+    "isReplyToRecipient": false,
+    "category": "transaction_alert"
+  },
+  {
+    "id": "c-txn7",
+    "sender": "noreply@paylink.example",
+    "senderDomain": "paylink.example",
+    "subject": "Payout of $1,120.00 is on its way",
+    "bodyText": "Your payout of $1,120.00 was sent to ****4417 and should arrive in 1-2 days.",
+    "isReplyToRecipient": false,
+    "category": "transaction_alert"
+  },
+  {
+    "id": "c-txn8",
+    "sender": "alerts@northbank.example",
+    "senderDomain": "northbank.example",
+    "subject": "Sign-in from a new device",
+    "bodyText": "Your account was accessed from Chrome on macOS at 09:14 on 17/09/26.\n\nIf this was you, no action is needed.",
+    "isReplyToRecipient": false,
+    "category": "transaction_alert"
+  },
+  {
+    "id": "c-txn9",
+    "sender": "alerts@brokerline.example",
+    "senderDomain": "brokerline.example",
+    "subject": "Weekly register of holdings, w/e 12 Sep 2026",
+    "bodyText": "Please find attached the register of securities and funds for the period 07 Sep to 12 Sep 2026.",
+    "isReplyToRecipient": false,
+    "category": "transaction_alert"
+  },
+  {
+    "id": "c-news1",
+    "sender": "hello@thelongshort.example",
+    "senderDomain": "thelongshort.example",
+    "subject": "The compounding trap",
+    "bodyText": "Good morning. Everything compounds, including the things you would rather it did not.\nThis week: three founders who measured the wrong number for a year.",
+    "isReplyToRecipient": false,
+    "category": "newsletter"
+  },
+  {
+    "id": "c-news2",
+    "sender": "digest@buildweekly.example",
+    "senderDomain": "buildweekly.example",
+    "subject": "Issue #114: the case against microservices, again",
+    "bodyText": "Welcome to issue 114. This month we look at four teams that consolidated back to a\nmonolith and what it cost them.",
+    "isReplyToRecipient": false,
+    "category": "newsletter"
+  },
+  {
+    "id": "c-cfp",
+    "sender": "programme@systemsconf.example",
+    "senderDomain": "systemsconf.example",
+    "subject": "SystemsConf 2027: call for proposals closes 3 October",
+    "bodyText": "Our call for proposals closes at 23:59 UTC on 3 October 2026 .\n\nWe are looking for talks on operating distributed systems at small scale. Anyone may\nsubmit; there is no invitation and no obligation.",
+    "isReplyToRecipient": false,
+    "category": "newsletter"
+  },
+  {
+    "id": "c-news4",
+    "sender": "updates@calendarapp.example",
+    "senderDomain": "calendarapp.example",
+    "subject": "Changelog: version 6.9",
+    "bodyText": "This month: workflows 2.0, a rebuilt troubleshooter, and 31 fixes.",
+    "isReplyToRecipient": false,
+    "category": "newsletter"
+  },
+  {
+    "id": "c-news5",
+    "sender": "notes@quietmornings.example",
+    "senderDomain": "quietmornings.example",
+    "subject": "3-2-1: on finishing things",
+    "bodyText": "Three ideas, two quotes, one question. This week on the difference between\nabandoning a project and completing it badly.",
+    "isReplyToRecipient": false,
+    "category": "newsletter"
+  },
+  {
+    "id": "c-news6",
+    "sender": "team@dataplane.example",
+    "senderDomain": "dataplane.example",
+    "subject": "Product update, September",
+    "bodyText": "Your queries can now run on the new planner. Set it once in settings and about 90\npercent of workloads pick it up automatically.",
+    "isReplyToRecipient": false,
+    "category": "newsletter"
+  },
+  {
+    "id": "c-news7",
+    "sender": "markets@brokerline.example",
+    "senderDomain": "brokerline.example",
+    "subject": "Morning wrap: index slips 1.04%",
+    "bodyText": "Key takeaways: the index closed down 1.04 percent, led by financials. Volumes were\nthin ahead of the weekend.",
+    "isReplyToRecipient": false,
+    "category": "newsletter"
+  },
+  {
+    "id": "c-news8",
+    "sender": "hello@thelongshort.example",
+    "senderDomain": "thelongshort.example",
+    "subject": "The two kinds of expensive",
+    "bodyText": "Good morning. There is expensive-because-rare and expensive-because-slow, and\nconfusing them is how budgets die.",
+    "isReplyToRecipient": false,
+    "category": "newsletter"
+  },
+  {
+    "id": "c-news9",
+    "sender": "brief@morningops.example",
+    "senderDomain": "morningops.example",
+    "subject": "Thursday brief: verification is the bottleneck",
+    "bodyText": "Morning. Thursday has a clean build-and-distribute shape. One fresh signal worth\nnoting in the agent tooling space.",
+    "isReplyToRecipient": false,
+    "category": "newsletter"
+  },
+  {
+    "id": "c-news10",
+    "sender": "digest@buildweekly.example",
+    "senderDomain": "buildweekly.example",
+    "subject": "Issue #115: what a good postmortem looks like",
+    "bodyText": "Welcome to issue 115. A blameless postmortem template that three readers sent in,\nplus the section everyone skips.",
+    "isReplyToRecipient": false,
+    "category": "newsletter"
+  },
+  {
+    "id": "c-job1",
+    "sender": "jobalerts@talentfeed.example",
+    "senderDomain": "talentfeed.example",
+    "subject": "Northwind Systems is hiring a Senior Backend Engineer",
+    "bodyText": "Northwind Systems, Senior Backend Engineer. Remote, full time. Matching your saved\nsearch \"backend, remote\".",
+    "isReplyToRecipient": false,
+    "category": "job_alert"
+  },
+  {
+    "id": "c-job2",
+    "sender": "jobalerts@talentfeed.example",
+    "senderDomain": "talentfeed.example",
+    "subject": "9 new roles matching \"platform engineer\"",
+    "bodyText": "Nine new roles this week matching your saved search, including three at companies\nyou follow.",
+    "isReplyToRecipient": false,
+    "category": "job_alert"
+  },
+  {
+    "id": "c-job3",
+    "sender": "jobs@rolesboard.example",
+    "senderDomain": "rolesboard.example",
+    "subject": "Aldergrove Labs is hiring a Full Stack Developer",
+    "bodyText": "Aldergrove Labs, Full Stack Developer. Hybrid, 3 days on site.",
+    "isReplyToRecipient": false,
+    "category": "job_alert"
+  },
+  {
+    "id": "c-job4",
+    "sender": "jobalerts@talentfeed.example",
+    "senderDomain": "talentfeed.example",
+    "subject": "Your weekly job digest",
+    "bodyText": "14 roles matched your searches this week. Nobody has contacted you directly.",
+    "isReplyToRecipient": false,
+    "category": "job_alert"
+  },
+  {
+    "id": "c-urgentad",
+    "sender": "notice@domainkeeper.example",
+    "senderDomain": "domainkeeper.example",
+    "subject": "Alert: your products are at risk",
+    "bodyText": "Immediate attention required. To avoid losing your items, upgrade to the\nPremium plan now. Offer ends at midnight.\n\nYour existing services are unaffected and no payment is overdue.",
+    "isReplyToRecipient": false,
+    "category": "promotional"
+  },
+  {
+    "id": "c-promo2",
+    "sender": "offers@domainkeeper.example",
+    "senderDomain": "domainkeeper.example",
+    "subject": "riverbend.io was taken, but you have options",
+    "bodyText": "The domain you searched is registered. Here are eight alternatives from $9.99.",
+    "isReplyToRecipient": false,
+    "category": "promotional"
+  },
+  {
+    "id": "c-promo3",
+    "sender": "hello@dataplane.example",
+    "senderDomain": "dataplane.example",
+    "subject": "A lot has changed since you last logged in",
+    "bodyText": "Your agent builds it, we run it. Database, ORM and hosting, free to start.",
+    "isReplyToRecipient": false,
+    "category": "promotional"
+  },
+  {
+    "id": "c-promo4",
+    "sender": "deals@travelcard.example",
+    "senderDomain": "travelcard.example",
+    "subject": "Trips abroad, planned by experts",
+    "bodyText": "Every \"what if\" abroad is answered before you land. Talk to a planner today.",
+    "isReplyToRecipient": false,
+    "category": "promotional"
+  },
+  {
+    "id": "c-promo5",
+    "sender": "sellers@marketplace.example",
+    "senderDomain": "marketplace.example",
+    "subject": "You have 3 messages from sellers",
+    "bodyText": "Scroll below and check your messages.",
+    "isReplyToRecipient": false,
+    "category": "promotional"
+  },
+  {
+    "id": "c-event1",
+    "sender": "events@systemsconf.example",
+    "senderDomain": "systemsconf.example",
+    "subject": "You are invited: Operating at Small Scale",
+    "bodyText": "A one-day conference for people who run systems without a platform team.\n21 October, and there is a livestream if you cannot travel.",
+    "isReplyToRecipient": false,
+    "category": "event_invite"
+  },
+  {
+    "id": "c-event2",
+    "sender": "meetups@localdevs.example",
+    "senderDomain": "localdevs.example",
+    "subject": "September meetup: observability on a budget",
+    "bodyText": "Doors at 18:30, talks at 19:00. Free, and there is pizza.",
+    "isReplyToRecipient": false,
+    "category": "event_invite"
+  },
+  {
+    "id": "c-event3",
+    "sender": "webinars@dataplane.example",
+    "senderDomain": "dataplane.example",
+    "subject": "Live demo: the new query planner",
+    "bodyText": "Join our engineers for a 30-minute walkthrough and Q&A. Recording sent to\neveryone who registers.",
+    "isReplyToRecipient": false,
+    "category": "event_invite"
+  },
+  {
+    "id": "c-rcpt1",
+    "sender": "receipts@cloudhost.example",
+    "senderDomain": "cloudhost.example",
+    "subject": "Your receipt from CloudHost #2026-4471",
+    "bodyText": "Thanks for your payment of $89.00 . Invoice 2026-4471 is paid in full.",
+    "isReplyToRecipient": false,
+    "category": "receipt"
+  },
+  {
+    "id": "c-rcpt2",
+    "sender": "orders@marketplace.example",
+    "senderDomain": "marketplace.example",
+    "subject": "Your order has shipped",
+    "bodyText": "Order #88412 shipped today and should arrive Friday. Tracking is in your account.",
+    "isReplyToRecipient": false,
+    "category": "receipt"
+  },
+  {
+    "id": "c-rcpt3",
+    "sender": "receipts@calendarapp.example",
+    "senderDomain": "calendarapp.example",
+    "subject": "Receipt for your annual plan",
+    "bodyText": "Payment of $144.00 received. Your plan renews 17 September 2027.",
+    "isReplyToRecipient": false,
+    "category": "receipt"
+  },
+  {
+    "id": "c-cc",
+    "sender": "dana@harbourstudio.example",
+    "senderDomain": "harbourstudio.example",
+    "subject": "Re: handover notes for the Tuesday migration",
+    "bodyText": "Thanks Priya, that covers it. I have added the rollback steps to the shared doc.\n\nCopying Sam so he has the context on Tuesday. Nothing needed from anyone else.",
+    "isReplyToRecipient": false,
+    "category": "personal"
+  },
+  {
+    "id": "c-nobody",
+    "sender": "monitor@statuswatch.example",
+    "senderDomain": "statuswatch.example",
+    "subject": "storefront-web: response time back to normal",
+    "bodyText": "",
+    "isReplyToRecipient": false,
+    "category": "automated_notification"
+  }
+]

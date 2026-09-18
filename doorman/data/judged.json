@@ -1,0 +1,706 @@
+{
+  "questionSet": "d2403aadc133",
+  "judged": {
+    "c-deploy": {
+      "battery": {
+        "needs_recipient_action": 0.83,
+        "reports_completed_event": 0.02,
+        "costs_money": 0.07,
+        "is_irreversible": 0.15,
+        "states_a_deadline": 0.03,
+        "is_promotional": 0.01,
+        "written_by_a_person": 0.05,
+        "consequence": {
+          "score": 1.93,
+          "confidence": 0.07
+        },
+        "hasBody": true
+      },
+      "failure": null
+    },
+    "c-declined": {
+      "battery": {
+        "needs_recipient_action": 0.95,
+        "reports_completed_event": 0.01,
+        "costs_money": 0.92,
+        "is_irreversible": 0.19,
+        "states_a_deadline": 0.59,
+        "is_promotional": 0.02,
+        "written_by_a_person": 0.04,
+        "consequence": {
+          "score": 2.71,
+          "confidence": 0.56
+        },
+        "hasBody": true
+      },
+      "failure": null
+    },
+    "c-domain": {
+      "battery": {
+        "needs_recipient_action": 0.95,
+        "reports_completed_event": 0.01,
+        "costs_money": 0.65,
+        "is_irreversible": 0.37,
+        "states_a_deadline": 0.99,
+        "is_promotional": 0.08,
+        "written_by_a_person": 0.06,
+        "consequence": {
+          "score": 3.39,
+          "confidence": 0.49
+        },
+        "hasBody": true
+      },
+      "failure": null
+    },
+    "c-ci": {
+      "battery": {
+        "needs_recipient_action": 0.81,
+        "reports_completed_event": 0.01,
+        "costs_money": 0.03,
+        "is_irreversible": 0.11,
+        "states_a_deadline": 0.06,
+        "is_promotional": 0.01,
+        "written_by_a_person": 0.03,
+        "consequence": {
+          "score": 2.93,
+          "confidence": 0.9
+        },
+        "hasBody": true
+      },
+      "failure": null
+    },
+    "c-verify": {
+      "battery": {
+        "needs_recipient_action": 0.97,
+        "reports_completed_event": 0.01,
+        "costs_money": 0.03,
+        "is_irreversible": 0.23,
+        "states_a_deadline": 0.98,
+        "is_promotional": 0.02,
+        "written_by_a_person": 0.03,
+        "consequence": {
+          "score": 2.95,
+          "confidence": 0.96
+        },
+        "hasBody": true
+      },
+      "failure": null
+    },
+    "c-txn1": {
+      "battery": {
+        "needs_recipient_action": 0.16,
+        "reports_completed_event": 0.93,
+        "costs_money": 0.05,
+        "is_irreversible": 0.06,
+        "states_a_deadline": 0.26,
+        "is_promotional": 0.01,
+        "written_by_a_person": 0.03,
+        "consequence": {
+          "score": 0.3,
+          "confidence": 0.75
+        },
+        "hasBody": true
+      },
+      "failure": null
+    },
+    "c-txn2": {
+      "battery": {
+        "needs_recipient_action": 0.03,
+        "reports_completed_event": 0.98,
+        "costs_money": 0.04,
+        "is_irreversible": 0.06,
+        "states_a_deadline": 0.11,
+        "is_promotional": 0.01,
+        "written_by_a_person": 0.04,
+        "consequence": {
+          "score": 0.03,
+          "confidence": 0.97
+        },
+        "hasBody": true
+      },
+      "failure": null
+    },
+    "c-txn3": {
+      "battery": {
+        "needs_recipient_action": 0.15,
+        "reports_completed_event": 0.19,
+        "costs_money": 0.05,
+        "is_irreversible": 0.1,
+        "states_a_deadline": 0.07,
+        "is_promotional": 0.01,
+        "written_by_a_person": 0.03,
+        "consequence": {
+          "score": 0.54,
+          "confidence": 0.55
+        },
+        "hasBody": true
+      },
+      "failure": null
+    },
+    "c-txn4": {
+      "battery": {
+        "needs_recipient_action": 0.45,
+        "reports_completed_event": 0.83,
+        "costs_money": 0.04,
+        "is_irreversible": 0.06,
+        "states_a_deadline": 0.2,
+        "is_promotional": 0.02,
+        "written_by_a_person": 0.04,
+        "consequence": {
+          "score": 0.76,
+          "confidence": 0.56
+        },
+        "hasBody": true
+      },
+      "failure": null
+    },
+    "c-txn5": {
+      "battery": {
+        "needs_recipient_action": 0.08,
+        "reports_completed_event": 0.67,
+        "costs_money": 0.03,
+        "is_irreversible": 0.05,
+        "states_a_deadline": 0.16,
+        "is_promotional": 0.02,
+        "written_by_a_person": 0.06,
+        "consequence": {
+          "score": 0.18,
+          "confidence": 0.85
+        },
+        "hasBody": true
+      },
+      "failure": null
+    },
+    "c-txn6": {
+      "battery": {
+        "needs_recipient_action": 0.1,
+        "reports_completed_event": 0.95,
+        "costs_money": 0.09,
+        "is_irreversible": 0.32,
+        "states_a_deadline": 0.16,
+        "is_promotional": 0.01,
+        "written_by_a_person": 0.04,
+        "consequence": {
+          "score": 0.52,
+          "confidence": 0.57
+        },
+        "hasBody": true
+      },
+      "failure": null
+    },
+    "c-txn7": {
+      "battery": {
+        "needs_recipient_action": 0.09,
+        "reports_completed_event": 0.28,
+        "costs_money": 0.04,
+        "is_irreversible": 0.1,
+        "states_a_deadline": 0.37,
+        "is_promotional": 0.02,
+        "written_by_a_person": 0.05,
+        "consequence": {
+          "score": 0.81,
+          "confidence": 0.32
+        },
+        "hasBody": true
+      },
+      "failure": null
+    },
+    "c-txn8": {
+      "battery": {
+        "needs_recipient_action": 0.17,
+        "reports_completed_event": 0.86,
+        "costs_money": 0.04,
+        "is_irreversible": 0.06,
+        "states_a_deadline": 0.1,
+        "is_promotional": 0.01,
+        "written_by_a_person": 0.03,
+        "consequence": {
+          "score": 1.15,
+          "confidence": 0.04
+        },
+        "hasBody": true
+      },
+      "failure": null
+    },
+    "c-txn9": {
+      "battery": {
+        "needs_recipient_action": 0.17,
+        "reports_completed_event": 0.75,
+        "costs_money": 0.03,
+        "is_irreversible": 0.06,
+        "states_a_deadline": 0.18,
+        "is_promotional": 0.02,
+        "written_by_a_person": 0.12,
+        "consequence": {
+          "score": 0.75,
+          "confidence": 0.37
+        },
+        "hasBody": true
+      },
+      "failure": null
+    },
+    "c-news1": {
+      "battery": {
+        "needs_recipient_action": 0.12,
+        "reports_completed_event": 0.05,
+        "costs_money": 0.05,
+        "is_irreversible": 0.14,
+        "states_a_deadline": 0.04,
+        "is_promotional": 0.15,
+        "written_by_a_person": 0.18,
+        "consequence": {
+          "score": 0.21,
+          "confidence": 0.83
+        },
+        "hasBody": true
+      },
+      "failure": null
+    },
+    "c-news2": {
+      "battery": {
+        "needs_recipient_action": 0.07,
+        "reports_completed_event": 0.18,
+        "costs_money": 0.04,
+        "is_irreversible": 0.1,
+        "states_a_deadline": 0.03,
+        "is_promotional": 0.05,
+        "written_by_a_person": 0.07,
+        "consequence": {
+          "score": 0.22,
+          "confidence": 0.82
+        },
+        "hasBody": true
+      },
+      "failure": null
+    },
+    "c-cfp": {
+      "battery": {
+        "needs_recipient_action": 0.17,
+        "reports_completed_event": 0.02,
+        "costs_money": 0.04,
+        "is_irreversible": 0.36,
+        "states_a_deadline": 0.99,
+        "is_promotional": 0.07,
+        "written_by_a_person": 0.08,
+        "consequence": {
+          "score": 1.02,
+          "confidence": 0.53
+        },
+        "hasBody": true
+      },
+      "failure": null
+    },
+    "c-news4": {
+      "battery": {
+        "needs_recipient_action": 0.07,
+        "reports_completed_event": 0.47,
+        "costs_money": 0.03,
+        "is_irreversible": 0.06,
+        "states_a_deadline": 0.03,
+        "is_promotional": 0.1,
+        "written_by_a_person": 0.06,
+        "consequence": {
+          "score": 0.19,
+          "confidence": 0.84
+        },
+        "hasBody": true
+      },
+      "failure": null
+    },
+    "c-news5": {
+      "battery": {
+        "needs_recipient_action": 0.1,
+        "reports_completed_event": 0.05,
+        "costs_money": 0.03,
+        "is_irreversible": 0.09,
+        "states_a_deadline": 0.05,
+        "is_promotional": 0.04,
+        "written_by_a_person": 0.24,
+        "consequence": {
+          "score": 0.25,
+          "confidence": 0.79
+        },
+        "hasBody": true
+      },
+      "failure": null
+    },
+    "c-news6": {
+      "battery": {
+        "needs_recipient_action": 0.45,
+        "reports_completed_event": 0.31,
+        "costs_money": 0.04,
+        "is_irreversible": 0.12,
+        "states_a_deadline": 0.03,
+        "is_promotional": 0.28,
+        "written_by_a_person": 0.11,
+        "consequence": {
+          "score": 0.64,
+          "confidence": 0.62
+        },
+        "hasBody": true
+      },
+      "failure": null
+    },
+    "c-news7": {
+      "battery": {
+        "needs_recipient_action": 0.06,
+        "reports_completed_event": 0.43,
+        "costs_money": 0.03,
+        "is_irreversible": 0.04,
+        "states_a_deadline": 0.04,
+        "is_promotional": 0.02,
+        "written_by_a_person": 0.11,
+        "consequence": {
+          "score": 0.3,
+          "confidence": 0.75
+        },
+        "hasBody": true
+      },
+      "failure": null
+    },
+    "c-news8": {
+      "battery": {
+        "needs_recipient_action": 0.09,
+        "reports_completed_event": 0.05,
+        "costs_money": 0.06,
+        "is_irreversible": 0.1,
+        "states_a_deadline": 0.02,
+        "is_promotional": 0.04,
+        "written_by_a_person": 0.38,
+        "consequence": {
+          "score": 0.18,
+          "confidence": 0.85
+        },
+        "hasBody": true
+      },
+      "failure": null
+    },
+    "c-news9": {
+      "battery": {
+        "needs_recipient_action": 0.18,
+        "reports_completed_event": 0.28,
+        "costs_money": 0.03,
+        "is_irreversible": 0.07,
+        "states_a_deadline": 0.08,
+        "is_promotional": 0.04,
+        "written_by_a_person": 0.27,
+        "consequence": {
+          "score": 0.64,
+          "confidence": 0.69
+        },
+        "hasBody": true
+      },
+      "failure": null
+    },
+    "c-news10": {
+      "battery": {
+        "needs_recipient_action": 0.09,
+        "reports_completed_event": 0.22,
+        "costs_money": 0.03,
+        "is_irreversible": 0.1,
+        "states_a_deadline": 0.03,
+        "is_promotional": 0.05,
+        "written_by_a_person": 0.09,
+        "consequence": {
+          "score": 0.32,
+          "confidence": 0.74
+        },
+        "hasBody": true
+      },
+      "failure": null
+    },
+    "c-job1": {
+      "battery": {
+        "needs_recipient_action": 0.17,
+        "reports_completed_event": 0.08,
+        "costs_money": 0.04,
+        "is_irreversible": 0.12,
+        "states_a_deadline": 0.03,
+        "is_promotional": 0.2,
+        "written_by_a_person": 0.04,
+        "consequence": {
+          "score": 0.98,
+          "confidence": 0.85
+        },
+        "hasBody": true
+      },
+      "failure": null
+    },
+    "c-job2": {
+      "battery": {
+        "needs_recipient_action": 0.18,
+        "reports_completed_event": 0.38,
+        "costs_money": 0.03,
+        "is_irreversible": 0.07,
+        "states_a_deadline": 0.04,
+        "is_promotional": 0.07,
+        "written_by_a_person": 0.03,
+        "consequence": {
+          "score": 0.75,
+          "confidence": 0.77
+        },
+        "hasBody": true
+      },
+      "failure": null
+    },
+    "c-job3": {
+      "battery": {
+        "needs_recipient_action": 0.15,
+        "reports_completed_event": 0.04,
+        "costs_money": 0.04,
+        "is_irreversible": 0.12,
+        "states_a_deadline": 0.03,
+        "is_promotional": 0.22,
+        "written_by_a_person": 0.12,
+        "consequence": {
+          "score": 0.95,
+          "confidence": 0.85
+        },
+        "hasBody": true
+      },
+      "failure": null
+    },
+    "c-job4": {
+      "battery": {
+        "needs_recipient_action": 0.49,
+        "reports_completed_event": 0.37,
+        "costs_money": 0.04,
+        "is_irreversible": 0.08,
+        "states_a_deadline": 0.04,
+        "is_promotional": 0.08,
+        "written_by_a_person": 0.03,
+        "consequence": {
+          "score": 0.67,
+          "confidence": 0.71
+        },
+        "hasBody": true
+      },
+      "failure": null
+    },
+    "c-urgentad": {
+      "battery": {
+        "needs_recipient_action": 0.28,
+        "reports_completed_event": 0.02,
+        "costs_money": 0.95,
+        "is_irreversible": 0.54,
+        "states_a_deadline": 0.98,
+        "is_promotional": 0.97,
+        "written_by_a_person": 0.07,
+        "consequence": {
+          "score": 0.89,
+          "confidence": 0.26
+        },
+        "hasBody": true
+      },
+      "failure": null
+    },
+    "c-promo2": {
+      "battery": {
+        "needs_recipient_action": 0.49,
+        "reports_completed_event": 0.04,
+        "costs_money": 0.83,
+        "is_irreversible": 0.44,
+        "states_a_deadline": 0.03,
+        "is_promotional": 0.97,
+        "written_by_a_person": 0.05,
+        "consequence": {
+          "score": 0.71,
+          "confidence": 0.61
+        },
+        "hasBody": true
+      },
+      "failure": null
+    },
+    "c-promo3": {
+      "battery": {
+        "needs_recipient_action": 0.19,
+        "reports_completed_event": 0.05,
+        "costs_money": 0.09,
+        "is_irreversible": 0.27,
+        "states_a_deadline": 0.03,
+        "is_promotional": 0.95,
+        "written_by_a_person": 0.1,
+        "consequence": {
+          "score": 0.43,
+          "confidence": 0.64
+        },
+        "hasBody": true
+      },
+      "failure": null
+    },
+    "c-promo4": {
+      "battery": {
+        "needs_recipient_action": 0.15,
+        "reports_completed_event": 0.02,
+        "costs_money": 0.2,
+        "is_irreversible": 0.23,
+        "states_a_deadline": 0.03,
+        "is_promotional": 0.97,
+        "written_by_a_person": 0.07,
+        "consequence": {
+          "score": 0.46,
+          "confidence": 0.62
+        },
+        "hasBody": true
+      },
+      "failure": null
+    },
+    "c-promo5": {
+      "battery": {
+        "needs_recipient_action": 0.6,
+        "reports_completed_event": 0.1,
+        "costs_money": 0.03,
+        "is_irreversible": 0.08,
+        "states_a_deadline": 0.02,
+        "is_promotional": 0.04,
+        "written_by_a_person": 0.06,
+        "consequence": {
+          "score": 1.01,
+          "confidence": 0.16
+        },
+        "hasBody": true
+      },
+      "failure": null
+    },
+    "c-event1": {
+      "battery": {
+        "needs_recipient_action": 0.16,
+        "reports_completed_event": 0.02,
+        "costs_money": 0.32,
+        "is_irreversible": 0.32,
+        "states_a_deadline": 0.66,
+        "is_promotional": 0.74,
+        "written_by_a_person": 0.1,
+        "consequence": {
+          "score": 0.81,
+          "confidence": 0.69
+        },
+        "hasBody": true
+      },
+      "failure": null
+    },
+    "c-event2": {
+      "battery": {
+        "needs_recipient_action": 0.1,
+        "reports_completed_event": 0.04,
+        "costs_money": 0.04,
+        "is_irreversible": 0.13,
+        "states_a_deadline": 0.06,
+        "is_promotional": 0.04,
+        "written_by_a_person": 0.11,
+        "consequence": {
+          "score": 0.85,
+          "confidence": 0.77
+        },
+        "hasBody": true
+      },
+      "failure": null
+    },
+    "c-event3": {
+      "battery": {
+        "needs_recipient_action": 0.24,
+        "reports_completed_event": 0.03,
+        "costs_money": 0.04,
+        "is_irreversible": 0.23,
+        "states_a_deadline": 0.03,
+        "is_promotional": 0.44,
+        "written_by_a_person": 0.08,
+        "consequence": {
+          "score": 0.89,
+          "confidence": 0.74
+        },
+        "hasBody": true
+      },
+      "failure": null
+    },
+    "c-rcpt1": {
+      "battery": {
+        "needs_recipient_action": 0.05,
+        "reports_completed_event": 0.98,
+        "costs_money": 0.04,
+        "is_irreversible": 0.06,
+        "states_a_deadline": 0.03,
+        "is_promotional": 0.02,
+        "written_by_a_person": 0.05,
+        "consequence": {
+          "score": 0.11,
+          "confidence": 0.91
+        },
+        "hasBody": true
+      },
+      "failure": null
+    },
+    "c-rcpt2": {
+      "battery": {
+        "needs_recipient_action": 0.15,
+        "reports_completed_event": 0.17,
+        "costs_money": 0.04,
+        "is_irreversible": 0.06,
+        "states_a_deadline": 0.51,
+        "is_promotional": 0.02,
+        "written_by_a_person": 0.05,
+        "consequence": {
+          "score": 1.14,
+          "confidence": 0.47
+        },
+        "hasBody": true
+      },
+      "failure": null
+    },
+    "c-rcpt3": {
+      "battery": {
+        "needs_recipient_action": 0.17,
+        "reports_completed_event": 0.77,
+        "costs_money": 0.11,
+        "is_irreversible": 0.11,
+        "states_a_deadline": 0.91,
+        "is_promotional": 0.04,
+        "written_by_a_person": 0.05,
+        "consequence": {
+          "score": 0.26,
+          "confidence": 0.79
+        },
+        "hasBody": true
+      },
+      "failure": null
+    },
+    "c-cc": {
+      "battery": {
+        "needs_recipient_action": 0.08,
+        "reports_completed_event": 0.66,
+        "costs_money": 0.02,
+        "is_irreversible": 0.23,
+        "states_a_deadline": 0.45,
+        "is_promotional": 0.01,
+        "written_by_a_person": 0.91,
+        "consequence": {
+          "score": 0.49,
+          "confidence": 0.59
+        },
+        "hasBody": true
+      },
+      "failure": null
+    },
+    "c-nobody": {
+      "battery": {
+        "needs_recipient_action": 0.08,
+        "reports_completed_event": 0.85,
+        "costs_money": null,
+        "is_irreversible": null,
+        "states_a_deadline": null,
+        "is_promotional": 0.01,
+        "written_by_a_person": 0.04,
+        "consequence": {
+          "score": 0.18,
+          "confidence": 0.85
+        },
+        "hasBody": false
+      },
+      "failure": null
+    }
+  },
+  "usage": {
+    "input_tokens": 42310,
+    "output_tokens": 6379
+  }
+}
