@@ -1,180 +1,78 @@
 # Capturing a timeline for the Phase 1 gate
 
-The gate needs roughly 100 real posts with their replies. There is no API budget and the
-extension does not exist yet, so the capture is a one-off snippet pasted into the X
-console. Everything downstream then runs offline in Node, which is also what makes
-extraction unit-testable.
+The gate needs roughly 100 real posts with their replies. Capture is a **mode of the
+extension**, not a console snippet.
 
 **Nothing captured here may be committed.** It lands in `captures/`, which is gitignored,
 and `pnpm fixtures` is what turns it into something publishable.
 
-## Two things this snippet deliberately does not do
+## Why not a console snippet
 
-**It never constructs a `Request` from X's own fetch arguments.** Doing so marks the
-original request's body as consumed, which breaks the very requests it is watching. It
-reads headers off the arguments instead.
+There was one. It could not work, and that was measured on a live timeline rather than
+reasoned about: X takes its own reference to `window.fetch` while its bundle parses, so a
+patch pasted in afterwards is never invoked. The interceptor saw no bearer token and no
+`TweetDetail` request even after navigating into a post.
 
-**It does not rebuild the reply URL from scratch.** X's `TweetDetail` endpoint requires a
-`features` blob alongside `variables`, and that blob changes with deploys. Guessing it
-gets a 400 on every post, which would leave the tier experiment with nothing to measure
-and no obvious reason why. So the snippet waits until it has seen X make a real
-`TweetDetail` request, keeps that exact URL and its headers, and replays it with only the
-focal tweet id swapped.
+A content script at `run_at: document_start` with `world: "MAIN"` runs *before* the page's
+own scripts, which is the only place the patch can land. Both settings are required:
+`document_start` for the timing, `MAIN` so the patch is on the same `window` X will use.
+`e2e/capture-timing.spec.ts` proves it against a fixture that stashes `fetch` at parse
+time exactly the way X does.
 
-That is why step 1 asks you to open a post. It is not a warm-up, it is how the snippet
-learns the request shape.
+Two further things the mode does deliberately:
 
-## Before running
+- **It never rebuilds the reply URL.** X requires a `features` blob alongside `variables`
+  and it changes between deploys, so a guessed URL 400s on every post. Capture waits until
+  it has seen X issue a real `TweetDetail` request, then replays that exact URL with only
+  the focal tweet id swapped.
+- **It is inert unless asked for.** Patching fetch on every X page load for someone who is
+  just reading would be a real cost for no reason, so nothing runs without the
+  `#dw-capture` hash.
 
-- Open `https://x.com/home` and let the timeline load.
-- Set your feed to **Following**, not For You. For You is a different distribution and the
-  extension has to work on the one you actually read.
-- Close other X tabs, so the interception below only sees this one.
+## Step 1: load the extension
 
-## Step 1: start the interceptor
-
-Paste this first. It only watches; it issues no requests of its own.
-
-```js
-(() => {
-  if (window.__dwCap) return console.warn('[capture] already running');
-  const cap = (window.__dwCap = { cards: new Map(), auth: null, detailUrl: null, detailHeaders: null });
-
-  const headerFrom = (input, init, name) => {
-    if (input instanceof Request) {
-      const v = input.headers.get(name);
-      if (v) return v;
-    }
-    const h = init && init.headers;
-    if (!h) return null;
-    if (h instanceof Headers) return h.get(name);
-    if (Array.isArray(h)) return (h.find(([k]) => k.toLowerCase() === name) || [])[1] || null;
-    return h[name] || h[name.replace(/(^|-)([a-z])/g, (_, a, b) => a + b.toUpperCase())] || null;
-  };
-
-  const origFetch = window.fetch;
-  window.fetch = function (...args) {
-    try {
-      const [input, init] = args;
-      const url = typeof input === 'string' ? input : input && input.url ? input.url : '';
-      const auth = headerFrom(input, init, 'authorization');
-      if (auth) cap.auth = auth;
-
-      if (url.includes('/TweetDetail') && !cap.detailUrl) {
-        cap.detailUrl = url;
-        const hdrs = {};
-        if (input instanceof Request) input.headers.forEach((v, k) => (hdrs[k] = v));
-        const h = init && init.headers;
-        if (h instanceof Headers) h.forEach((v, k) => (hdrs[k] = v));
-        else if (h && !Array.isArray(h)) Object.assign(hdrs, h);
-        cap.detailHeaders = hdrs;
-        console.log('[capture] learned the TweetDetail request shape');
-      }
-    } catch (e) {
-      /* never let instrumentation break the page */
-    }
-    return origFetch.apply(this, args);
-  };
-
-  const collect = () => {
-    for (const card of document.querySelectorAll('article[data-testid="tweet"]')) {
-      const href = card.querySelector('a[href*="/status/"]');
-      const id = href && href.getAttribute('href').match(/\/status\/(\d+)/);
-      if (id && !cap.cards.has(id[1])) cap.cards.set(id[1], card.outerHTML);
-    }
-    console.log(
-      `[capture] ${cap.cards.size} cards | auth ${cap.auth ? 'yes' : 'no'} | detail ${cap.detailUrl ? 'yes' : 'no'}`,
-    );
-  };
-
-  new MutationObserver(collect).observe(document.body, { childList: true, subtree: true });
-  collect();
-  console.log('[capture] running. Now: open one post, press back, then scroll for a minute.');
-})();
+```bash
+cd downweight && pnpm build:ext
 ```
 
-## Step 2: open one post, press back, then scroll
+Then `chrome://extensions` → Developer mode on → **Load unpacked** →
+`downweight/extension/dist`.
 
-The order matters. Opening a post is what makes X issue a `TweetDetail` request, which is
-how the snippet learns the URL and headers it will replay. Then scroll until the card
-count reaches about 100.
+No API key is needed for capture. The key is only for scoring.
 
-Check progress any time:
+## Step 2: open the timeline in capture mode
 
-```js
-console.log(window.__dwCap.cards.size, window.__dwCap.detailUrl ? 'ready' : 'OPEN A POST FIRST');
-```
+Go to **`https://x.com/home#dw-capture`**. The hash is the opt-in. A small panel appears
+bottom-left showing the post count and what is still missing.
 
-## Step 3: fetch replies and download
+Switch the feed to **Following**, not For You. For You is a different distribution and the
+extension has to work on the one you actually read.
 
-```js
-(async () => {
-  const cap = window.__dwCap;
-  if (!cap.detailUrl) throw new Error('No TweetDetail request seen. Open one post, press back, and rerun.');
-  if (!cap.auth) throw new Error('No bearer token seen. Scroll a little more.');
+## Step 3: open one post, press back
 
-  const csrf = (document.cookie.match(/ct0=([^;]+)/) || [])[1];
-  if (!csrf) throw new Error('No ct0 cookie. Are you signed in?');
+This is not a warm-up. It is how capture learns the reply request shape, and the download
+button stays disabled until it has. The panel will stop saying `No TweetDetail request
+seen yet`.
 
-  // Replay the URL X itself used, swapping only the focal tweet id. Everything else,
-  // including the `features` blob, is kept exactly as X sent it.
-  const template = new URL(cap.detailUrl, location.origin);
-  const baseVars = JSON.parse(template.searchParams.get('variables') || '{}');
+## Step 4: scroll
 
-  const urlFor = (id) => {
-    const u = new URL(template);
-    u.searchParams.set('variables', JSON.stringify({ ...baseVars, focalTweetId: id }));
-    return u.toString();
-  };
+Until the panel reads about 100 posts. It warns while the count is low, and capture
+survives X rewriting the URL as you navigate.
 
-  const headers = { ...(cap.detailHeaders || {}), authorization: cap.auth, 'x-csrf-token': csrf };
-  // Per-request signature; replaying a stale one is worse than omitting it.
-  delete headers['x-client-transaction-id'];
-  delete headers['content-length'];
+## Step 5: fetch replies and download
 
-  const ids = [...cap.cards.keys()];
-  const out = { capturedAt: new Date().toISOString(), posts: [] };
-  let failures = 0;
+Click **Fetch replies + download**. It replays the learned request four posts at a time
+with a pause between batches. This is a one-off on your own account, but it is still your
+account, and a burst of a hundred parallel requests is what a rate limiter exists to
+notice. Progress shows in the panel.
 
-  // Four at a time with a pause. This is a one-off on your own account, but it is still
-  // your account: 100 parallel requests is what a rate limiter exists to notice.
-  for (let i = 0; i < ids.length; i += 4) {
-    await Promise.all(
-      ids.slice(i, i + 4).map(async (id) => {
-        let replies = null;
-        try {
-          const res = await fetch(urlFor(id), { credentials: 'include', headers });
-          if (res.ok) replies = await res.json();
-          else failures++;
-        } catch {
-          failures++;
-        }
-        out.posts.push({ id, html: cap.cards.get(id), replies });
-      }),
-    );
-    console.log(`[capture] ${out.posts.length}/${ids.length} (${failures} reply failures)`);
-    await new Promise((r) => setTimeout(r, 400));
-  }
+If the panel warns that reply coverage is under half, stop and rerun rather than pressing
+on. The tier experiment is the entire reason tier 2 exists and it cannot conclude anything
+from a handful of posts.
 
-  const withReplies = out.posts.filter((p) => p.replies).length;
-  console.log(`[capture] done. ${out.posts.length} posts, ${withReplies} with replies.`);
-  if (withReplies < out.posts.length * 0.5) {
-    console.warn('[capture] more than half the reply fetches failed. The tier experiment needs these.');
-  }
+The panel's **Stop** button ends capture mode for the session.
 
-  const blob = new Blob([JSON.stringify(out)], { type: 'application/json' });
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(blob);
-  a.download = `capture-${Date.now()}.json`;
-  a.click();
-})();
-```
-
-**Stop if the reply failure count is high.** The whole point of the tier experiment is to
-decide whether replies are worth their risk, and it cannot answer that on a handful of
-posts. Reload the tab and rerun rather than pressing on.
-
-## Step 4: move it in and check it
+## Step 6: move it in and check it
 
 ```bash
 mv ~/Downloads/capture-*.json downweight/captures/ && cd downweight && pnpm capture:check
@@ -185,9 +83,9 @@ you spend an hour labelling**: how many cards extract, how many carry replies, t
 length distribution, and how many posts would be scoreable on all six dimensions. It also
 writes `labels/template.json` for the next step.
 
-Reload the X tab afterwards to remove the patched `fetch`.
+Hit **Stop** in the panel, or close the tab, when you are done.
 
-## Step 5: label
+## Step 7: label
 
 `pnpm capture:check` writes `labels/template.json` with every post id and its text. Copy
 it to `labels/labels.json` and fill in each verdict:
@@ -200,7 +98,7 @@ what the zero-false-positive check runs against, and it is what gates the dimmin
 
 Both directories are gitignored and must stay that way.
 
-## Step 6: publishable fixtures
+## Step 8: publishable fixtures
 
 ```bash
 pnpm fixtures
