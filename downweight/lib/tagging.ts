@@ -29,10 +29,18 @@ export const STYLE_ID = 'dw-style';
  */
 export const STYLES = `
 .${ROOT_CLASS} article[data-testid="tweet"].${CARD_CLASS} { position: relative; }
+/*
+ * Offset far enough left to clear X's own top-right controls on every card: the Grok
+ * button and the overflow menu. At right:12px the tag landed on top of them, which both
+ * looked broken and put a non-interactive element over two real ones.
+ *
+ * Exposed as a variable because the right number depends on X's chrome, which changes.
+ * One value to retune rather than a hunt through the stylesheet.
+ */
 .${ROOT_CLASS} .${TAG_CLASS} {
   position: absolute;
   top: 10px;
-  right: 12px;
+  right: var(--dw-tag-right, 92px);
   z-index: 2;
   pointer-events: none;
   font: 500 11px/1.4 ui-monospace, SFMono-Regular, Menlo, monospace;

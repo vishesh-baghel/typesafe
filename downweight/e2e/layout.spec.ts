@@ -173,3 +173,31 @@ test('teardown leaves the page laid out exactly as it started', async ({ page })
   const opacity = await page.locator('article').first().evaluate((el) => getComputedStyle(el).opacity);
   expect(Number(opacity)).toBe(1);
 });
+
+test('the tag clears X\'s own top-right controls', async ({ page }) => {
+  // At right:12px the tag sat on top of the Grok button and the overflow menu: it looked
+  // broken, and it put a non-interactive element over two real controls.
+  await page.setContent(`<!doctype html><html><head><meta charset="utf-8"><style>
+      body { margin: 0; font: 15px/1.4 system-ui, sans-serif; width: 600px; }
+      article { position: relative; border-bottom: 1px solid #ddd; padding: 12px 16px; }
+      .controls { position: absolute; top: 8px; right: 12px; display: flex; gap: 4px; }
+      .controls button { width: 32px; height: 32px; }
+    </style></head><body><main>
+      <article data-testid="tweet">
+        <div class="controls"><button id="grok">G</button><button id="more">…</button></div>
+        <div data-testid="tweetText">a post of ordinary length sitting under its controls</div>
+      </article>
+    </main></body></html>`);
+  await page.addStyleTag({ content: STYLES });
+  await page.addScriptTag({ path: HARNESS });
+  await page.evaluate(() => {
+    document.documentElement.classList.add(window.dw.ROOT_CLASS);
+    window.dw.applyTag(document.querySelector<HTMLElement>('article')!, 'promo');
+  });
+
+  const tag = (await page.locator('.dw-tag').boundingBox())!;
+  const grok = (await page.locator('#grok').boundingBox())!;
+
+  // Entirely to the left of the leftmost control, not merely not-centred on it.
+  expect(tag.x + tag.width).toBeLessThanOrEqual(grok.x);
+});
