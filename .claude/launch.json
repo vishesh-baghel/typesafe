@@ -4,8 +4,22 @@
     {
       "name": "upweight",
       "runtimeExecutable": "pnpm",
-      "runtimeArgs": ["--dir", "upweight", "dev"],
+      "runtimeArgs": [
+        "--dir",
+        "upweight",
+        "dev"
+      ],
       "port": 3000
+    },
+    {
+      "name": "doorman",
+      "runtimeExecutable": "pnpm",
+      "runtimeArgs": [
+        "--dir",
+        "doorman",
+        "dev"
+      ],
+      "port": 3001
     }
   ]
 }
