@@ -33,6 +33,16 @@ export default defineConfig([
     minify: true,
     // The content script runs in the page, so it must carry everything it needs.
     noExternal: [/.*/],
+    /*
+     * Without this, React's `process.env.NODE_ENV` checks survive into the bundle.
+     * `process` does not exist in a browser, so popup.js threw the moment it loaded,
+     * React never mounted, and the popup rendered at zero height: from the outside,
+     * clicking the extension icon appeared to do nothing at all.
+     *
+     * It also switches React to its production build, which is the difference between
+     * shipping the dev-mode reconciler and not.
+     */
+    define: { 'process.env.NODE_ENV': '"production"' },
     // manifest.json names sw.js / content.js / popup.js. tsup would emit .mjs for ESM,
     // and Chrome resolves the manifest's paths literally, so the mismatch shows up as a
     // silent "service worker registration failed" rather than a build error.
