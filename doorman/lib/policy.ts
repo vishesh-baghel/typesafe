@@ -1,4 +1,4 @@
-import { UNRESOLVED_HI, UNRESOLVED_LO } from './questions';
+import { UNRESOLVED_HI, UNRESOLVED_LO } from './band';
 import type { Battery, Bucket, Judged, Rule, Thresholds, Verdict, VerdictFlag } from './types';
 
 /**
