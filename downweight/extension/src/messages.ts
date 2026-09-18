@@ -13,7 +13,7 @@ import type { RawPost, ScoredPost } from '../../lib/types';
 export type ContentRequest =
   | { kind: 'score'; posts: RawPost[] }
   | { kind: 'settings' }
-  | { kind: 'label'; post: RawPost; scored: ScoredPost; label: Label | null }
+  | { kind: 'label'; post: RawPost; scored: ScoredPost | null; label: Label | null }
   | { kind: 'labels' }
   | { kind: 'dataset' };
 

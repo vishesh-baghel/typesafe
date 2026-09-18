@@ -174,7 +174,7 @@ describe('clearTag', () => {
     // Tearing the overlay down here would make them vanish whenever a post stopped
     // crossing the threshold, which is exactly when you might want to disagree with it.
     const el = mount(card());
-    ensureLabelControls(el, () => {});
+    ensureLabelControls(el, 'p1', () => {});
     applyTag(el, 'bait');
     clearTag(el);
 
@@ -271,13 +271,13 @@ describe('teardown leaves a normal timeline behind', () => {
 describe('ensureLabelControls', () => {
   it('adds keep and hide', () => {
     const el = mount(card());
-    ensureLabelControls(el, () => {});
+    ensureLabelControls(el, 'p1', () => {});
     expect([...el.querySelectorAll(`.${LABEL_CLASS}`)].map((b) => b.textContent)).toEqual(['keep', 'hide']);
   });
 
   it('is idempotent, so a repaint cannot stack buttons', () => {
     const el = mount(card());
-    for (let i = 0; i < 5; i++) ensureLabelControls(el, () => {});
+    for (let i = 0; i < 5; i++) ensureLabelControls(el, 'p1', () => {});
     expect(el.querySelectorAll(`.${LABEL_CLASS}`)).toHaveLength(2);
   });
 
@@ -285,13 +285,13 @@ describe('ensureLabelControls', () => {
     // Same rule as the tag: the content script repaints from a MutationObserver, so a
     // paint that mutates restarts the loop.
     const el = mount(card());
-    ensureLabelControls(el, () => {}, 'hide');
+    ensureLabelControls(el, 'p1', () => {}, 'hide');
 
     const records: MutationRecord[] = [];
     const obs = new MutationObserver((rs) => records.push(...rs));
     obs.observe(el, { childList: true, subtree: true, attributes: true, characterData: true });
-    ensureLabelControls(el, () => {}, 'hide');
-    ensureLabelControls(el, () => {}, 'hide');
+    ensureLabelControls(el, 'p1', () => {}, 'hide');
+    ensureLabelControls(el, 'p1', () => {}, 'hide');
     await new Promise((r) => setTimeout(r, 0));
     obs.disconnect();
 
@@ -301,7 +301,7 @@ describe('ensureLabelControls', () => {
   it('reports the click', () => {
     const el = mount(card());
     const seen: string[] = [];
-    ensureLabelControls(el, (l) => seen.push(l));
+    ensureLabelControls(el, 'p1', (_id, l) => seen.push(l));
     el.querySelector<HTMLButtonElement>(`.${LABEL_CLASS}[data-dw="hide"]`)!.click();
     el.querySelector<HTMLButtonElement>(`.${LABEL_CLASS}[data-dw="keep"]`)!.click();
     expect(seen).toEqual(['hide', 'keep']);
@@ -314,14 +314,14 @@ describe('ensureLabelControls', () => {
     el.addEventListener('click', (e) => {
       if (!e.defaultPrevented) navigated = true;
     });
-    ensureLabelControls(el, () => {});
+    ensureLabelControls(el, 'p1', () => {});
     el.querySelector<HTMLButtonElement>(`.${LABEL_CLASS}[data-dw="keep"]`)!.click();
     expect(navigated).toBe(false);
   });
 
   it('marks the chosen label, and only that one', () => {
     const el = mount(card());
-    ensureLabelControls(el, () => {}, 'keep');
+    ensureLabelControls(el, 'p1', () => {}, 'keep');
     const keep = el.querySelector(`.${LABEL_CLASS}[data-dw="keep"]`)!;
     const hide = el.querySelector(`.${LABEL_CLASS}[data-dw="hide"]`)!;
     expect(keep.classList.contains(CHOSEN_CLASS)).toBe(true);
@@ -331,15 +331,49 @@ describe('ensureLabelControls', () => {
 
   it('moves the mark when the verdict changes', () => {
     const el = mount(card());
-    ensureLabelControls(el, () => {}, 'keep');
-    ensureLabelControls(el, () => {}, 'hide');
+    ensureLabelControls(el, 'p1', () => {}, 'keep');
+    ensureLabelControls(el, 'p1', () => {}, 'hide');
     expect(el.querySelector(`.${LABEL_CLASS}[data-dw="keep"]`)!.classList.contains(CHOSEN_CLASS)).toBe(false);
     expect(el.querySelector(`.${LABEL_CLASS}[data-dw="hide"]`)!.classList.contains(CHOSEN_CLASS)).toBe(true);
   });
 
+  it('labels the post the card currently shows, not the one it showed when created', () => {
+    /*
+     * The bug this exists for. X virtualises the timeline and reuses card nodes for
+     * different posts as you scroll. A listener that captured the id at creation time
+     * would record the reader's verdict against whichever post happened to occupy that
+     * node first: not a broken button, but silently wrong data that the gate would
+     * absorb without ever knowing.
+     */
+    const el = mount(card());
+    const seen: string[] = [];
+    ensureLabelControls(el, 'post-a', (id) => seen.push(id));
+
+    // Same DOM node, now showing a different post.
+    ensureLabelControls(el, 'post-b', (id) => seen.push(id));
+    el.querySelector<HTMLButtonElement>(`.${LABEL_CLASS}[data-dw="hide"]`)!.click();
+
+    expect(seen).toEqual(['post-b']);
+  });
+
+  it('rebinding to a new post emits exactly one mutation, not a rebuild', () => {
+    const el = mount(card());
+    ensureLabelControls(el, 'post-a', () => {});
+
+    const records: MutationRecord[] = [];
+    const obs = new MutationObserver((rs) => records.push(...rs));
+    obs.observe(el, { childList: true, subtree: true, attributes: true });
+    ensureLabelControls(el, 'post-b', () => {});
+    obs.disconnect();
+
+    // Only the id attribute changes; the buttons are not torn down and rebuilt.
+    expect(el.querySelectorAll(`.${LABEL_CLASS}`)).toHaveLength(2);
+    expect(records.every((r) => r.type === 'attributes')).toBe(true);
+  });
+
   it('shares one overlay with the tag', () => {
     const el = mount(card());
-    ensureLabelControls(el, () => {});
+    ensureLabelControls(el, 'p1', () => {});
     applyTag(el, 'bait');
     expect(el.querySelectorAll(`.${OVERLAY_CLASS}`)).toHaveLength(1);
     // keep / hide / verdict, in that order.

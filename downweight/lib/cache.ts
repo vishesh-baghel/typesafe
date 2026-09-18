@@ -93,7 +93,7 @@ export async function clearCache(db: IDBDatabase): Promise<void> {
 /** One post the reader gave a verdict on, with the judgment that was on screen at the time. */
 export interface LabelRecord {
   post: RawPost;
-  scored: ScoredPost;
+  scored: ScoredPost | null;
   label: Label;
   at: number;
 }

@@ -156,10 +156,22 @@ export type Label = 'keep' | 'hide';
  */
 export function ensureLabelControls(
   card: HTMLElement,
-  onLabel: (label: Label) => void,
+  postId: string,
+  onLabel: (postId: string, label: Label) => void,
   current: Label | null = null,
 ): void {
   const overlay = ensureOverlay(card);
+
+  /*
+   * The id lives on the element and is read at click time, never captured in the
+   * listener's closure.
+   *
+   * X virtualises the timeline and reuses card nodes for different posts as you scroll.
+   * A listener that closed over the id it saw when the button was created would, on a
+   * recycled card, cheerfully record a verdict against the wrong post. That is worse than
+   * a broken button: it is silently wrong data, and the gate would never know.
+   */
+  if (overlay.dataset['dwId'] !== postId) overlay.dataset['dwId'] = postId;
 
   for (const label of ['keep', 'hide'] as const) {
     let btn = overlay.querySelector<HTMLButtonElement>(`:scope > .${LABEL_CLASS}[data-dw="${label}"]`);
@@ -173,7 +185,8 @@ export function ensureLabelControls(
         // The card is a link on X. Without this, labelling navigates to the post.
         e.preventDefault();
         e.stopPropagation();
-        onLabel(label);
+        const id = (e.currentTarget as HTMLElement).closest<HTMLElement>(`.${OVERLAY_CLASS}`)?.dataset['dwId'];
+        if (id) onLabel(id, label);
       });
       // Before the tag, so the row reads keep / hide / verdict.
       overlay.insertBefore(btn, overlay.querySelector(`:scope > .${TAG_CLASS}`));

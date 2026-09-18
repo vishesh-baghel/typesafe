@@ -1,4 +1,4 @@
-import { allLabels, getMany, openCache, putLabel, putScored, removeLabel } from '../../lib/cache';
+import { allLabels, getMany, getScored, openCache, putLabel, putScored, removeLabel } from '../../lib/cache';
 import { mapLimit } from '../../lib/concurrency';
 import { makeClient, SCORE_CONCURRENCY, scorePost } from '../../lib/jev';
 import type { RawPost, ScoredPost } from '../../lib/types';
@@ -71,12 +71,11 @@ chrome.runtime.onMessage.addListener((message: unknown, _sender, sendResponse) =
         const cache = await db();
         if (message.label === null) await removeLabel(cache, message.post.id);
         else {
-          await putLabel(cache, {
-            post: message.post,
-            scored: message.scored,
-            label: message.label,
-            at: Date.now(),
-          });
+          // The content script may not have the judgment yet, but the cache might: the
+          // post could have been scored in an earlier session. Prefer whichever exists
+          // so a label given early still counts once a judgment is available.
+          const scored = message.scored ?? (await getScored(cache, message.post.id));
+          await putLabel(cache, { post: message.post, scored, label: message.label, at: Date.now() });
         }
         response = { kind: 'ok' };
       } else if (message.kind === 'labels') {

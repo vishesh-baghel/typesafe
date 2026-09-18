@@ -12,7 +12,16 @@ import { DIM_KEYS, type DimKey, type RawPost, type ScoredPost } from './types';
  */
 export interface LabelledPost {
   post: RawPost;
-  scored: ScoredPost;
+  /**
+   * The judgment that was on screen when the reader gave their verdict, or null if they
+   * labelled a post the model had not reached yet.
+   *
+   * Nullable on purpose. Requiring a judgment made clicks on unscored posts silently do
+   * nothing, which is how the buttons appeared to stop working. A verdict is the reader's
+   * and is valid whether or not the model has caught up; it simply cannot contribute to
+   * an agreement rate until it has.
+   */
+  scored: ScoredPost | null;
   label: Label;
   at: number;
 }
@@ -26,6 +35,8 @@ export interface Dataset {
 
 export interface GateResult {
   labelled: number;
+  /** Labelled before the model reached them. Counted, not silently dropped. */
+  unjudged: number;
   agreed: number;
   agreement: number;
   /** Labelled hide and tagged. */
@@ -78,7 +89,7 @@ export function correlate(
   const xs: number[] = [];
   const ys: number[] = [];
   for (const { scored } of posts) {
-    if (!scored.scores[a]?.available || !scored.scores[b]?.available) continue;
+    if (!scored?.scores[a]?.available || !scored.scores[b]?.available) continue;
     xs.push(scored.scores[a].value);
     ys.push(scored.scores[b].value);
   }
@@ -96,10 +107,13 @@ export function correlate(
  * No model calls: every judgment was already made and cached when the post was on screen.
  */
 export function runGate(
-  posts: readonly LabelledPost[],
+  all: readonly LabelledPost[],
   weights: Weights,
   threshold: number,
 ): GateResult {
+  // Only posts the model actually judged can contribute to an agreement rate. The rest
+  // are reported rather than quietly dropped.
+  const posts = all.filter((p): p is LabelledPost & { scored: ScoredPost } => p.scored !== null);
   let agreed = 0;
   let caught = 0;
   let hideTotal = 0;
@@ -151,7 +165,8 @@ export function runGate(
   }
 
   return {
-    labelled: posts.length,
+    labelled: all.length,
+    unjudged: all.length - posts.length,
     agreed,
     agreement: posts.length ? agreed / posts.length : 0,
     caught,
