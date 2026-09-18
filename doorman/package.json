@@ -1,0 +1,35 @@
+{
+  "name": "doorman",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev --port 3001",
+    "build": "next build",
+    "start": "next start --port 3001",
+    "lint": "eslint",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit",
+    "smoke": "tsx --env-file=.env.local scripts/smoke.ts",
+    "gate": "tsx --env-file=.env.local scripts/gate.ts",
+    "experiment-body": "tsx --env-file=.env.local scripts/experiment-body.ts"
+  },
+  "dependencies": {
+    "@typesafe-ai/sdk": "^0.6.0",
+    "next": "16.3.5",
+    "react": "19.2.8",
+    "react-dom": "19.2.8"
+  },
+  "devDependencies": {
+    "@rolldown/binding-linux-x64-gnu": "^1.2.9",
+    "@types/node": "^20",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "@vitest/coverage-v8": "^5.0.1",
+    "eslint": "^9",
+    "eslint-config-next": "16.3.5",
+    "tsx": "^4.23.13",
+    "typescript": "^5",
+    "vitest": "^5.0.1"
+  },
+  "packageManager": "pnpm@10.18.2"
+}
