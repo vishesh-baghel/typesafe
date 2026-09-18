@@ -17,7 +17,8 @@
     "gate": "tsx --env-file=.env.local scripts/gate.ts",
     "tiers": "tsx --env-file=.env.local scripts/experiment-tiers.ts",
     "correlate": "tsx scripts/correlate.ts",
-    "fixtures": "tsx scripts/build-fixtures.ts"
+    "fixtures": "tsx scripts/build-fixtures.ts",
+    "capture:check": "tsx scripts/inspect-capture.ts"
   },
   "dependencies": {
     "@typesafe-ai/sdk": "^0.6.0",
