@@ -81,7 +81,10 @@ export const isEnabled = (doc: Document): boolean =>
  * runs many times per card in a normal session.
  */
 export function applyTag(card: HTMLElement, tag: string, detail?: string): HTMLSpanElement {
-  card.classList.add(CARD_CLASS);
+  // Guarded rather than relying on the engine to skip a no-op write. Whether
+  // `classList.add` of an existing class emits a mutation record is not something to
+  // depend on across engines, and here a stray record restarts the paint loop.
+  if (!card.classList.contains(CARD_CLASS)) card.classList.add(CARD_CLASS);
 
   let el = card.querySelector<HTMLSpanElement>(`:scope > .${TAG_CLASS}`);
   if (!el) {
@@ -90,9 +93,23 @@ export function applyTag(card: HTMLElement, tag: string, detail?: string): HTMLS
     el.setAttribute('aria-hidden', 'true');
     card.appendChild(el);
   }
-  el.textContent = tag;
-  if (detail) el.title = detail;
-  else el.removeAttribute('title');
+
+  /*
+   * Write only on change, and this is not micro-optimisation.
+   *
+   * `el.textContent = tag` replaces the text node even when the string is identical, so
+   * it emits a mutation record either way. The content script re-paints from a
+   * MutationObserver on the timeline, so an unconditional write means paint mutates,
+   * the observer fires, paint runs again: an infinite loop that pegs the tab. The same
+   * shape froze capture mode. Idempotent has to mean "emits no mutation", not just
+   * "produces the same DOM".
+   */
+  if (el.textContent !== tag) el.textContent = tag;
+  if (detail) {
+    if (el.getAttribute('title') !== detail) el.title = detail;
+  } else if (el.hasAttribute('title')) {
+    el.removeAttribute('title');
+  }
   return el;
 }
 

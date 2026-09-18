@@ -17,6 +17,13 @@ import { loadSettings } from './settings';
 let dbPromise: Promise<IDBDatabase> | null = null;
 const db = () => (dbPromise ??= openCache());
 
+/*
+ * Kept because the failure mode without it is the worst kind: nothing appears, and
+ * there is no way to tell a wrong key from a dead worker from a timeline where simply
+ * nothing crossed the threshold. The popup reads these back.
+ */
+const stats = { judged: 0, failed: 0, cached: 0, lastError: null as string | null };
+
 async function scoreBatch(posts: RawPost[]): Promise<ScoredPost[]> {
   const settings = await loadSettings();
   if (!settings.apiKey) throw new Error('No API key set. Open the Downweight popup and paste one.');
@@ -27,16 +34,21 @@ async function scoreBatch(posts: RawPost[]): Promise<ScoredPost[]> {
   // Only pay for what is not already known. X re-serves the same posts constantly, so on
   // a normal scrolling session this is most of them.
   const todo = posts.filter((p) => !cached.has(p.id));
+  stats.cached += cached.size;
   const client = makeClient(settings.apiKey);
 
   const fresh = await mapLimit(todo, SCORE_CONCURRENCY, async (post) => {
     try {
       const out = await scorePost(post, client);
       await putScored(cache, out);
+      stats.judged++;
       return out;
-    } catch {
+    } catch (err) {
       // One post failing must not fail the batch. An unscored post is simply untagged,
-      // which is the same thing the reader would see with the extension off.
+      // which is the same thing the reader would see with the extension off. But the
+      // reason is recorded, or a wrong key looks identical to a quiet timeline.
+      stats.failed++;
+      stats.lastError = err instanceof Error ? err.message : String(err);
       return null;
     }
   });
@@ -63,11 +75,14 @@ chrome.runtime.onMessage.addListener((message: unknown, _sender, sendResponse) =
           weights: s.weights,
           threshold: s.threshold,
           dimming: s.dimming && s.enabled,
+          diagnostics: { ...stats },
         };
       }
       sendResponse(response);
     } catch (err) {
-      sendResponse(errorResponse(err instanceof Error ? err.message : String(err)));
+      const reason = err instanceof Error ? err.message : String(err);
+      stats.lastError = reason;
+      sendResponse(errorResponse(reason));
     }
   })();
 

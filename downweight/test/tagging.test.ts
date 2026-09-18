@@ -88,6 +88,43 @@ describe('applyTag', () => {
     expect(el.querySelectorAll(`.${TAG_CLASS}`)).toHaveLength(1);
   });
 
+  it('emits no DOM mutation when re-applied unchanged', async () => {
+    // The precise regression. The content script re-paints from a MutationObserver on the
+    // timeline, so a paint that mutates makes the observer fire, which paints again, which
+    // mutates: an infinite loop that pegs the tab. Being idempotent in the DOM it produces
+    // is not enough; it has to emit no mutation record at all.
+    const el = mount(card());
+    applyTag(el, 'bait', 'scored on 6 of 6');
+
+    const records: MutationRecord[] = [];
+    const obs = new MutationObserver((rs) => records.push(...rs));
+    obs.observe(el, { childList: true, subtree: true, attributes: true, characterData: true });
+
+    applyTag(el, 'bait', 'scored on 6 of 6');
+    applyTag(el, 'bait', 'scored on 6 of 6');
+    await new Promise((r) => setTimeout(r, 0));
+    obs.disconnect();
+
+    expect(records).toEqual([]);
+  });
+
+  it('does emit a mutation when the verdict actually changes', async () => {
+    // The other half: suppressing writes must not suppress real updates.
+    const el = mount(card());
+    applyTag(el, 'bait');
+
+    const records: MutationRecord[] = [];
+    const obs = new MutationObserver((rs) => records.push(...rs));
+    obs.observe(el, { childList: true, subtree: true, characterData: true });
+
+    applyTag(el, 'promo');
+    await new Promise((r) => setTimeout(r, 0));
+    obs.disconnect();
+
+    expect(records.length).toBeGreaterThan(0);
+    expect(el.querySelector(`.${TAG_CLASS}`)!.textContent).toBe('promo');
+  });
+
   it('updates the word in place when the verdict changes', () => {
     const el = mount(card());
     applyTag(el, 'bait');

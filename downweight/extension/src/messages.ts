@@ -12,9 +12,24 @@ export type ContentRequest =
   | { kind: 'score'; posts: RawPost[] }
   | { kind: 'settings' };
 
+/** What the worker knows about how scoring is actually going. */
+export interface Diagnostics {
+  judged: number;
+  failed: number;
+  cached: number;
+  lastError: string | null;
+}
+
 export type WorkerResponse =
   | { kind: 'scored'; posts: ScoredPost[] }
-  | { kind: 'settings'; hasKey: boolean; weights: Record<string, number>; threshold: number; dimming: boolean }
+  | {
+      kind: 'settings';
+      hasKey: boolean;
+      weights: Record<string, number>;
+      threshold: number;
+      dimming: boolean;
+      diagnostics: Diagnostics;
+    }
   | { kind: 'error'; reason: string };
 
 export const isContentRequest = (v: unknown): v is ContentRequest => {
