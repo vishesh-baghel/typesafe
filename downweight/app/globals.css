@@ -1,0 +1,81 @@
+/* Downweight
+ * Cobalt tokens lifted verbatim from upweight/app/globals.css, which is the shared
+ * design system for the Jev experiment series. Fonts come from next/font/google.
+ *
+ * This file styles the sample-corpus demo only. The extension's own styles live in
+ * lib/tagging.ts, scoped under a single root class so the whole thing can be switched
+ * off by removing it, and deliberately do not use these tokens: the extension renders
+ * inside X's page and has to sit in X's visual world, not ours.
+ */
+
+/* ─── tokens · light only, committed ──────────────────────────────────── */
+:root {
+  color-scheme: light;
+
+  --font-display: var(--font-space-grotesk), ui-sans-serif, system-ui, sans-serif;
+  --font-body: var(--font-inter), ui-sans-serif, system-ui, -apple-system, sans-serif;
+  --font-mono: var(--font-jetbrains-mono), ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+
+  --text-xs: 0.6875rem;
+  --text-sm: 0.8125rem;
+  --text-base: 0.9375rem;
+  --text-lg: 1.0625rem;
+  --text-xl: 1.25rem;
+  --text-2xl: 1.625rem;
+
+  --space-2xs: 0.25rem;
+  --space-xs: 0.5rem;
+  --space-sm: 0.75rem;
+  --space-md: 1rem;
+  --space-lg: 1.5rem;
+  --space-xl: 2rem;
+  --space-2xl: 3rem;
+
+  --radius-sm: 4px;
+  --radius-md: 6px;
+  --radius-lg: 10px;
+
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in: cubic-bezier(0.7, 0, 0.84, 0);
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+  --dur-fast: 140ms;
+  --dur-mid: 260ms;
+
+  --rule: 1px;
+  --measure: 64ch;
+
+  --color-paper: oklch(98.5% 0.004 250);
+  --color-paper-2: oklch(96.4% 0.005 252);
+  --color-paper-3: oklch(94% 0.006 253);
+  --color-ink: oklch(24% 0.02 258);
+  --color-ink-2: oklch(36% 0.018 257);
+  --color-ink-3: oklch(54% 0.015 256);
+  --color-rule: oklch(91% 0.006 255);
+  --color-rule-2: oklch(84% 0.009 255);
+  --color-accent: oklch(52% 0.20 256);
+  --color-accent-ink: oklch(99% 0.005 256);
+  --color-accent-soft: oklch(94.5% 0.028 256);
+  --color-graphite: oklch(22% 0.016 260);
+  --color-graphite-rule: oklch(34% 0.014 260);
+  --color-on-graphite: oklch(92% 0.006 256);
+  --color-on-graphite-2: oklch(70% 0.012 256);
+  --color-on-graphite-3: oklch(56% 0.012 256);
+  --color-graphite-accent: oklch(72% 0.17 254);
+  --color-pos: oklch(52% 0.13 158);
+  --color-neg: oklch(54% 0.18 27);
+  --color-focus: oklch(52% 0.20 256);
+  --color-tok-num: oklch(78% 0.11 90);
+  --color-scrim: oklch(18% 0.02 258 / 0.66);
+  --shadow-lift: 0 1px 2px oklch(24% 0.02 258 / 0.06);
+  --shadow-overlay: 0 16px 48px oklch(20% 0.02 258 / 0.18);
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: var(--color-paper);
+  color: var(--color-ink);
+  font-family: var(--font-body);
+  font-size: var(--text-base);
+}

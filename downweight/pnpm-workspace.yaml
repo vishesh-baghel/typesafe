@@ -1,0 +1,7 @@
+# esbuild must be allowed to run its postinstall or it has no binary, which breaks both
+# tsup (the extension bundler) and vitest. unrs-resolver is a native dep of the eslint
+# config that the lint run does not need.
+onlyBuiltDependencies:
+  - esbuild
+ignoredBuiltDependencies:
+  - unrs-resolver
