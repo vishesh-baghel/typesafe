@@ -1,17 +1,27 @@
 import { useEffect, useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import { DIMS, matchingPreset, PRESETS, type Weights } from '../../lib/composite';
+import { isWorkerResponse, type Diagnostics } from './messages';
 import { DEFAULTS, loadSettings, saveSettings, type Settings } from './settings';
 
 function Popup() {
   const [s, setS] = useState<Settings>(DEFAULTS);
   const [loaded, setLoaded] = useState(false);
+  const [diag, setDiag] = useState<Diagnostics | null>(null);
 
   useEffect(() => {
     void loadSettings().then((next) => {
       setS(next);
       setLoaded(true);
     });
+    // Ask the worker how scoring is actually going. Without this the popup can only show
+    // what was configured, never whether any of it worked.
+    void chrome.runtime
+      .sendMessage({ kind: 'settings' })
+      .then((r: unknown) => {
+        if (isWorkerResponse(r) && r.kind === 'settings') setDiag(r.diagnostics);
+      })
+      .catch(() => setDiag(null));
   }, []);
 
   const patch = (p: Partial<Settings>) => {
@@ -26,6 +36,25 @@ function Popup() {
   return (
     <div style={{ padding: 16, display: 'grid', gap: 14 }}>
       <strong style={{ fontSize: 14 }}>Downweight</strong>
+
+      <div style={{ fontSize: 11, color: '#555', borderLeft: '2px solid #ddd', paddingLeft: 8 }}>
+        {!diag ? (
+          <span>Worker not responding. Check its console from chrome://extensions.</span>
+        ) : diag.lastError ? (
+          <span style={{ color: '#b23' }}>Last error: {diag.lastError}</span>
+        ) : diag.judged === 0 ? (
+          <span>
+            Nothing judged yet.{' '}
+            {s.apiKey ? 'Scroll the timeline and give it a moment.' : 'Paste a key below first.'}
+          </span>
+        ) : (
+          <span>
+            {diag.judged} judged, {diag.cached} from cache
+            {diag.failed > 0 ? `, ${diag.failed} failed` : ''}. No tags means nothing crossed
+            your threshold.
+          </span>
+        )}
+      </div>
 
       <label style={{ display: 'grid', gap: 4 }}>
         <span style={{ fontSize: 11, opacity: 0.7 }}>TypeSafe API key</span>
