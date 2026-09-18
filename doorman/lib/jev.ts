@@ -21,6 +21,9 @@ export const CONCURRENCY = 8;
 let client: TypeSafeClient | null = null;
 const getClient = () => (client ??= new TypeSafeClient());
 
+/** Shared by every module that calls the model, so one test seam covers all of them. */
+export const __getClient = getClient;
+
 /** Test seam. */
 export function __setClient(c: TypeSafeClient | null) {
   client = c;

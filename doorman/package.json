@@ -11,7 +11,9 @@
     "typecheck": "tsc --noEmit",
     "smoke": "tsx --env-file=.env.local scripts/smoke.ts",
     "gate": "tsx --env-file=.env.local scripts/gate.ts",
-    "experiment-body": "tsx --env-file=.env.local scripts/experiment-body.ts"
+    "experiment-body": "tsx --env-file=.env.local scripts/experiment-body.ts",
+    "build-corpus": "tsx scripts/build-corpus.ts",
+    "judge-corpus": "tsx --env-file=.env.local scripts/judge-corpus.ts"
   },
   "dependencies": {
     "@typesafe-ai/sdk": "^0.6.0",
