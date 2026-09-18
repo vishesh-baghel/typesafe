@@ -12,6 +12,14 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Build output. These are minified single-line bundles, so linting them produces
+    // hundreds of warnings about generated code and buries anything real.
+    "extension/dist/**",
+    "e2e/dist/**",
+    "coverage/**",
+    ".cov/**",
+    "playwright-report/**",
+    "test-results/**",
   ]),
   {
     rules: {
