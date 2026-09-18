@@ -19,3 +19,6 @@ dist/
 # os / editor
 .DS_Store
 *.swp
+
+# Claude Code worktree checkouts, hundreds of MB of tooling artifact
+.claude/worktrees/

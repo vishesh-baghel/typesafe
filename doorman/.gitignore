@@ -45,3 +45,6 @@ data/labelled-50.json
 data/.gate-cache.json
 .gmail-token.json
 credentials.json
+
+# live pulls for review, never committed
+data/inbox-*.json
