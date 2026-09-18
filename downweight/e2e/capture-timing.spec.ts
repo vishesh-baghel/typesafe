@@ -32,6 +32,14 @@ const PAGE = `<!doctype html>
   const stashedFetch = window.fetch;
   window.__callAsX = (url) =>
     stashedFetch(url, { headers: { authorization: 'Bearer XTOKEN', 'x-client-transaction-id': 'sig' } });
+  const StashedXHR = window.XMLHttpRequest;
+  window.__callAsXhr = (url) => new Promise((resolve) => {
+    const x = new StashedXHR();
+    x.open('GET', url);
+    x.setRequestHeader('authorization', 'Bearer XTOKEN');
+    x.onloadend = () => resolve(x.status);
+    x.send();
+  });
 </script>
 </head>
 <body><main>
@@ -126,4 +134,47 @@ test('capture survives the hash being rewritten, as an SPA does', async ({ page 
   // itself off the moment X rewrote the URL.
   expect(await page.evaluate(() => typeof (window as never as Record<string, unknown>)['__downweightCapture']))
     .toBe('object');
+});
+
+test('it sees a conversation request made over XHR, not just fetch', async ({ page }) => {
+  // X mixes both transports. Watching only fetch is what left the panel reporting "no
+  // TweetDetail request seen" on a live post page with the replies visibly loaded.
+  await setup(page, '#dw-capture');
+
+  await page.evaluate(async (u) => {
+    await (window as never as { __callAsXhr: (u: string) => Promise<number> }).__callAsXhr(u);
+  }, DETAIL_URL);
+
+  await expect
+    .poll(() =>
+      page.evaluate(
+        () => (window as never as { __downweightCapture: { ready(): boolean } }).__downweightCapture.ready(),
+      ),
+    )
+    .toBe(true);
+});
+
+test('an XHR still reaches the network with the patch installed', async ({ page }) => {
+  // Patching send() must observe without swallowing. If this regressed, X itself would
+  // stop working the moment capture mode was on.
+  await setup(page, '#dw-capture');
+  const status = await page.evaluate(
+    async (u) => (window as never as { __callAsXhr: (u: string) => Promise<number> }).__callAsXhr(u),
+    DETAIL_URL,
+  );
+  expect(status).toBe(200);
+});
+
+test('it reports the operations it has seen when none of them match', async ({ page }) => {
+  // The diagnostic that turns "nothing happened" into a name we can act on.
+  await setup(page, '#dw-capture');
+  await page.evaluate(async () => {
+    await (window as never as { __callAsX: (u: string) => Promise<Response> }).__callAsX(
+      'https://x.com/i/api/graphql/q9/HomeLatestTimeline?variables=%7B%7D',
+    );
+  });
+
+  const badge = page.locator('#dw-capture-badge');
+  await expect(badge).toContainText('GraphQL seen');
+  await expect(badge).toContainText('HomeLatestTimeline');
 });

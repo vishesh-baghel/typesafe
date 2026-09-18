@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import {
   assessCapture,
+  isConversationOperation,
+  parseGraphqlOperation,
   buildCaptureFile,
   CAPTURE_HASH,
   captureFilename,
@@ -35,6 +37,49 @@ describe('shouldActivate: capture is off unless asked for', () => {
     expect(shouldActivate('', null)).toBe(false);
     expect(shouldActivate('#other', null)).toBe(false);
     expect(shouldActivate('', '0')).toBe(false);
+  });
+});
+
+describe('parseGraphqlOperation', () => {
+  it('pulls the query id and operation name out of a graphql url', () => {
+    expect(parseGraphqlOperation('https://x.com/i/api/graphql/AbC-123/TweetDetail?variables=%7B%7D')).toEqual({
+      queryId: 'AbC-123',
+      operation: 'TweetDetail',
+    });
+  });
+
+  it('works on a relative url, which is what X actually issues', () => {
+    expect(parseGraphqlOperation('/i/api/graphql/q1/HomeLatestTimeline')?.operation).toBe(
+      'HomeLatestTimeline',
+    );
+  });
+
+  it('is null for anything that is not a graphql call', () => {
+    for (const url of ['https://x.com/home', '/i/api/1.1/jot/client_event.json', '', 'nonsense']) {
+      expect(parseGraphqlOperation(url)).toBeNull();
+    }
+  });
+});
+
+describe('isConversationOperation', () => {
+  it('matches the names X has used for a post conversation', () => {
+    // Matching the literal string "TweetDetail" was not enough in practice: the patch ran
+    // on a live post page with replies on screen and never fired. Hence the breadth.
+    for (const op of ['TweetDetail', 'ThreadedConversation', 'TweetResultByRestId', 'tweetdetail']) {
+      expect(isConversationOperation(op)).toBe(true);
+    }
+  });
+
+  it('does not match timeline or telemetry operations', () => {
+    for (const op of ['HomeTimeline', 'HomeLatestTimeline', 'UserByScreenName', 'CreateTweet']) {
+      expect(isConversationOperation(op)).toBe(false);
+    }
+  });
+
+  it('errs toward matching, because the two failures are not symmetric', () => {
+    // A false positive costs one wasted replay that yields no reply nodes. A false
+    // negative costs the entire tier experiment.
+    expect(isConversationOperation('TweetDetailV2')).toBe(true);
   });
 });
 
