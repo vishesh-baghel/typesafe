@@ -21,6 +21,9 @@ export const CARD_CLASS = 'dw-card';
 export const TAG_CLASS = 'dw-tag';
 export const DIM_CLASS = 'dw-dim';
 export const STYLE_ID = 'dw-style';
+export const OVERLAY_CLASS = 'dw-overlay';
+export const LABEL_CLASS = 'dw-label';
+export const CHOSEN_CLASS = 'dw-chosen';
 
 /**
  * `position: relative` with no offsets occupies exactly the same box as `static`, so
@@ -29,19 +32,49 @@ export const STYLE_ID = 'dw-style';
  */
 export const STYLES = `
 .${ROOT_CLASS} article[data-testid="tweet"].${CARD_CLASS} { position: relative; }
-/*
- * Offset far enough left to clear X's own top-right controls on every card: the Grok
- * button and the overflow menu. At right:12px the tag landed on top of them, which both
- * looked broken and put a non-interactive element over two real ones.
- *
- * Exposed as a variable because the right number depends on X's chrome, which changes.
- * One value to retune rather than a hunt through the stylesheet.
- */
-.${ROOT_CLASS} .${TAG_CLASS} {
+.${ROOT_CLASS} .${OVERLAY_CLASS} {
   position: absolute;
   top: 10px;
   right: var(--dw-tag-right, 92px);
   z-index: 2;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  pointer-events: none;
+}
+/* Hidden until the cursor is on the card, so the timeline is untouched while reading. */
+.${ROOT_CLASS} .${LABEL_CLASS} {
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 120ms ease-out;
+  font: 500 11px/1.4 ui-monospace, SFMono-Regular, Menlo, monospace;
+  padding: 2px 7px;
+  border-radius: 4px;
+  cursor: pointer;
+  color: inherit;
+  background: rgba(127, 127, 127, 0.14);
+  border: 1px solid rgba(127, 127, 127, 0.3);
+}
+.${ROOT_CLASS} article[data-testid="tweet"]:hover .${LABEL_CLASS},
+.${ROOT_CLASS} .${LABEL_CLASS}.${CHOSEN_CLASS} {
+  opacity: 1;
+  pointer-events: auto;
+}
+.${ROOT_CLASS} .${LABEL_CLASS}:hover { background: rgba(127, 127, 127, 0.28); }
+.${ROOT_CLASS} .${LABEL_CLASS}.${CHOSEN_CLASS} {
+  color: #1f4fd8;
+  background: rgba(31, 79, 216, 0.14);
+  border-color: rgba(31, 79, 216, 0.4);
+}
+/*
+ * The tag rides in the overlay rather than positioning itself, so the label buttons and
+ * the tag lay themselves out as one row and cannot collide as either changes width.
+ *
+ * The overlay's offset clears X's own top-right controls, the Grok button and the
+ * overflow menu. At right:12px the tag sat on top of them. It is a variable because the
+ * right number depends on X's chrome, which changes.
+ */
+.${ROOT_CLASS} .${TAG_CLASS} {
   pointer-events: none;
   font: 500 11px/1.4 ui-monospace, SFMono-Regular, Menlo, monospace;
   letter-spacing: 0.02em;
@@ -88,18 +121,80 @@ export const isEnabled = (doc: Document): boolean =>
  * repeatedly as the reader scrolls, and a slider drag retags every visible post, so this
  * runs many times per card in a normal session.
  */
-export function applyTag(card: HTMLElement, tag: string, detail?: string): HTMLSpanElement {
+/**
+ * The one absolutely-positioned row every card gets, holding the label buttons and the
+ * tag. Created once; everything else writes into it.
+ *
+ * Every write in here is guarded on change. Emitting a mutation record restarts the
+ * content script's paint loop, so "idempotent" has to mean "emits no mutation", not just
+ * "produces the same DOM".
+ */
+export function ensureOverlay(card: HTMLElement): HTMLDivElement {
   // Guarded rather than relying on the engine to skip a no-op write. Whether
   // `classList.add` of an existing class emits a mutation record is not something to
   // depend on across engines, and here a stray record restarts the paint loop.
   if (!card.classList.contains(CARD_CLASS)) card.classList.add(CARD_CLASS);
 
-  let el = card.querySelector<HTMLSpanElement>(`:scope > .${TAG_CLASS}`);
+  let overlay = card.querySelector<HTMLDivElement>(`:scope > .${OVERLAY_CLASS}`);
+  if (!overlay) {
+    overlay = card.ownerDocument.createElement('div');
+    overlay.className = OVERLAY_CLASS;
+    card.appendChild(overlay);
+  }
+  return overlay;
+}
+
+export type Label = 'keep' | 'hide';
+
+/**
+ * Two buttons, invisible until the cursor is on the card.
+ *
+ * Labelling has to be something you can do while reading rather than a mode you enter.
+ * A permanent pair of buttons on every post would be its own kind of clutter, and a
+ * separate capture mode was worse: it made collecting the gate data a ritual rather than
+ * a by-product of using the thing.
+ */
+export function ensureLabelControls(
+  card: HTMLElement,
+  onLabel: (label: Label) => void,
+  current: Label | null = null,
+): void {
+  const overlay = ensureOverlay(card);
+
+  for (const label of ['keep', 'hide'] as const) {
+    let btn = overlay.querySelector<HTMLButtonElement>(`:scope > .${LABEL_CLASS}[data-dw="${label}"]`);
+    if (!btn) {
+      btn = card.ownerDocument.createElement('button');
+      btn.type = 'button';
+      btn.className = LABEL_CLASS;
+      btn.dataset['dw'] = label;
+      btn.textContent = label;
+      btn.addEventListener('click', (e) => {
+        // The card is a link on X. Without this, labelling navigates to the post.
+        e.preventDefault();
+        e.stopPropagation();
+        onLabel(label);
+      });
+      // Before the tag, so the row reads keep / hide / verdict.
+      overlay.insertBefore(btn, overlay.querySelector(`:scope > .${TAG_CLASS}`));
+    }
+
+    const chosen = current === label;
+    if (btn.classList.contains(CHOSEN_CLASS) !== chosen) btn.classList.toggle(CHOSEN_CLASS, chosen);
+    const pressed = chosen ? 'true' : 'false';
+    if (btn.getAttribute('aria-pressed') !== pressed) btn.setAttribute('aria-pressed', pressed);
+  }
+}
+
+export function applyTag(card: HTMLElement, tag: string, detail?: string): HTMLSpanElement {
+  const overlay = ensureOverlay(card);
+
+  let el = overlay.querySelector<HTMLSpanElement>(`:scope > .${TAG_CLASS}`);
   if (!el) {
     el = card.ownerDocument.createElement('span');
     el.className = TAG_CLASS;
     el.setAttribute('aria-hidden', 'true');
-    card.appendChild(el);
+    overlay.appendChild(el);
   }
 
   /*
@@ -132,9 +227,9 @@ function dropClass(el: Element, name: string): void {
   if (el.classList.length === 0) el.removeAttribute('class');
 }
 
+/** Removes the verdict but leaves the label buttons, which are not a verdict. */
 export function clearTag(card: HTMLElement): void {
-  card.querySelector(`:scope > .${TAG_CLASS}`)?.remove();
-  dropClass(card, CARD_CLASS);
+  card.querySelector(`.${TAG_CLASS}`)?.remove();
 }
 
 export function setDimmed(card: HTMLElement, on: boolean): void {
@@ -150,6 +245,7 @@ export function setDimmed(card: HTMLElement, on: boolean): void {
  * a half-annotated one.
  */
 export function teardown(root: ParentNode): void {
+  for (const el of Array.from(root.querySelectorAll(`.${OVERLAY_CLASS}`))) el.remove();
   for (const el of Array.from(root.querySelectorAll(`.${TAG_CLASS}`))) el.remove();
   for (const el of Array.from(root.querySelectorAll(`.${CARD_CLASS}`))) dropClass(el, CARD_CLASS);
   for (const el of Array.from(root.querySelectorAll(`.${DIM_CLASS}`))) dropClass(el, DIM_CLASS);

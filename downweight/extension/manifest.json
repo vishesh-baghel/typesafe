@@ -3,7 +3,9 @@
   "name": "Downweight",
   "version": "0.1.0",
   "description": "Tags engagement bait, AI slop and self-promotion on X. Your key, your browser, no server.",
-  "permissions": ["storage"],
+  "permissions": [
+    "storage"
+  ],
   "host_permissions": [
     "https://api.typesafe.ai/*",
     "https://x.com/*",
@@ -15,15 +17,14 @@
   },
   "content_scripts": [
     {
-      "matches": ["https://x.com/*", "https://twitter.com/*"],
-      "js": ["content.js"],
+      "matches": [
+        "https://x.com/*",
+        "https://twitter.com/*"
+      ],
+      "js": [
+        "content.js"
+      ],
       "run_at": "document_idle"
-    },
-    {
-      "matches": ["https://x.com/*", "https://twitter.com/*"],
-      "js": ["capture-main.js"],
-      "run_at": "document_start",
-      "world": "MAIN"
     }
   ],
   "action": {

@@ -1,7 +1,7 @@
 import { IDBFactory } from 'fake-indexeddb';
 import { beforeEach, describe, expect, it } from 'vitest';
-import { clearCache, getMany, getScored, openCache, putScored } from '../lib/cache';
-import { scored } from './helpers';
+import { allLabels, clearCache, getMany, getScored, openCache, putLabel, putScored, removeLabel } from '../lib/cache';
+import { rawPost, scored } from './helpers';
 
 let db: Awaited<ReturnType<typeof openCache>>;
 
@@ -163,5 +163,55 @@ describe('failure paths surface as rejections, never as silent success', () => {
   it('rejects a clear against a closed database', async () => {
     db.close();
     await expect(clearCache(db)).rejects.toBeTruthy();
+  });
+});
+
+describe('labels: the reader\'s verdicts, kept apart from the model\'s', () => {
+  const record = (id: string, label: 'keep' | 'hide') => ({
+    post: rawPost({ id }),
+    scored: scored(id, { bait: 0.6 }),
+    label,
+    at: 1,
+  });
+
+  it('round-trips a label', async () => {
+    await putLabel(db, record('1', 'hide'));
+    expect((await allLabels(db)).map((r) => [r.post.id, r.label])).toEqual([['1', 'hide']]);
+  });
+
+  it('overwrites rather than duplicating when a verdict changes', async () => {
+    await putLabel(db, record('1', 'keep'));
+    await putLabel(db, record('1', 'hide'));
+    const all = await allLabels(db);
+    expect(all).toHaveLength(1);
+    expect(all[0]!.label).toBe('hide');
+  });
+
+  it('removes a label, so a misclick is undoable', async () => {
+    await putLabel(db, record('1', 'hide'));
+    await removeLabel(db, '1');
+    expect(await allLabels(db)).toEqual([]);
+  });
+
+  it('keeps the judgment that was on screen when the reader disagreed', async () => {
+    // Re-scoring later would compare their verdict against a different answer than the
+    // one they were reacting to.
+    await putLabel(db, record('1', 'hide'));
+    expect((await allLabels(db))[0]!.scored.scores.bait.value).toBeCloseTo(0.6, 10);
+  });
+
+  it('is untouched by clearing the judgment cache', async () => {
+    // Two stores on purpose: a verdict outlives any particular judgment, and dropping
+    // cached scores must not throw away an hour of labelling.
+    await putScored(db, scored('1'));
+    await putLabel(db, record('1', 'hide'));
+    await clearCache(db);
+
+    expect(await getScored(db, '1')).toBeNull();
+    expect(await allLabels(db)).toHaveLength(1);
+  });
+
+  it('is empty on a fresh database rather than undefined', async () => {
+    expect(await allLabels(db)).toEqual([]);
   });
 });

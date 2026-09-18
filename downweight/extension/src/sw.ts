@@ -1,4 +1,4 @@
-import { getMany, openCache, putScored } from '../../lib/cache';
+import { allLabels, getMany, openCache, putLabel, putScored, removeLabel } from '../../lib/cache';
 import { mapLimit } from '../../lib/concurrency';
 import { makeClient, SCORE_CONCURRENCY, scorePost } from '../../lib/jev';
 import type { RawPost, ScoredPost } from '../../lib/types';
@@ -67,6 +67,33 @@ chrome.runtime.onMessage.addListener((message: unknown, _sender, sendResponse) =
       let response: WorkerResponse;
       if (message.kind === 'score') {
         response = { kind: 'scored', posts: await scoreBatch(message.posts) };
+      } else if (message.kind === 'label') {
+        const cache = await db();
+        if (message.label === null) await removeLabel(cache, message.post.id);
+        else {
+          await putLabel(cache, {
+            post: message.post,
+            scored: message.scored,
+            label: message.label,
+            at: Date.now(),
+          });
+        }
+        response = { kind: 'ok' };
+      } else if (message.kind === 'labels') {
+        const records = await allLabels(await db());
+        response = {
+          kind: 'labels',
+          labels: Object.fromEntries(records.map((r) => [r.post.id, r.label])),
+        };
+      } else if (message.kind === 'dataset') {
+        const records = await allLabels(await db());
+        response = {
+          kind: 'dataset',
+          dataset: {
+            exportedAt: new Date().toISOString(),
+            posts: records.map(({ post, scored, label, at }) => ({ post, scored, label, at })),
+          },
+        };
       } else {
         const s = await loadSettings();
         response = {
@@ -75,7 +102,7 @@ chrome.runtime.onMessage.addListener((message: unknown, _sender, sendResponse) =
           weights: s.weights,
           threshold: s.threshold,
           dimming: s.dimming && s.enabled,
-          diagnostics: { ...stats },
+          diagnostics: { ...stats, labelled: (await allLabels(await db())).length },
         };
       }
       sendResponse(response);
