@@ -1,0 +1,67 @@
+name: Downweight CI
+
+# Scoped to downweight/** on purpose. upweight/ has no CI today and adding one here would
+# be a change to a shipped project nobody asked for.
+on:
+  push:
+    branches: [main]
+    paths: ['downweight/**', '.github/workflows/downweight-ci.yml']
+  pull_request:
+    paths: ['downweight/**', '.github/workflows/downweight-ci.yml']
+  workflow_dispatch:
+
+defaults:
+  run:
+    working-directory: downweight
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.18.2
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+          cache-dependency-path: downweight/pnpm-lock.yaml
+
+      - run: pnpm install --frozen-lockfile
+
+      - name: Typecheck
+        run: pnpm typecheck
+
+      - name: Lint
+        run: pnpm lint
+
+      # Fails if lib/** drops below the coverage thresholds in vitest.config.mts.
+      - name: Unit and DOM tests
+        run: pnpm test
+
+      - name: Install Playwright chromium
+        run: pnpm exec playwright install --with-deps chromium
+
+      # The card-height invariant, which jsdom cannot check because it has no layout engine.
+      - name: Layout invariants
+        run: pnpm test:e2e
+
+      - name: Build the extension
+        run: pnpm build:ext
+
+      - name: Build the demo
+        run: pnpm build
+
+      # The PRD rule: no real post content in the repo. captures/ and labels/ are
+      # gitignored, and this fails the build if either is ever committed anyway.
+      - name: Refuse committed captures
+        run: |
+          if git ls-files --error-unmatch captures labels >/dev/null 2>&1; then
+            echo "captures/ or labels/ is tracked. These hold real post content and must stay ignored."
+            exit 1
+          fi
+          echo "ok: no captures or labels tracked"
