@@ -1,5 +1,7 @@
 # Doorman
 
+**[doorman.visheshbaghel.com](https://doorman.visheshbaghel.com)**
+
 **Decision fatigue is not the cost of deciding. It is the cost of re-deriving your criteria
 every time.** You already know how you want to triage your inbox. You just have to reload that
 policy into your head thirty times a day.
@@ -157,8 +159,10 @@ counted **in code**, because Jev does not count reliably and the number is alrea
 ## The demo costs nothing to run
 
 Judgments are bought once and committed, so the deployed page renders with **no API key present**
-and dragging a threshold re-sorts three piles with **zero network calls**. Verified, not assumed:
-moving the surface threshold from 0.55 to 0.20 took the surfaced pile from 6 to 11 with 0 fetches.
+and dragging a threshold re-sorts three piles with **zero network calls**.
+
+Verified on the live site, not assumed: moving the surface threshold from 0.55 to 0.20 took the
+surfaced pile from 6 to 11, and the piles from 6/13/22 to 11/9/21, with **0 fetch calls**.
 
 Only two things reach the server: validating a new rule, and matching it against the corpus.
 
