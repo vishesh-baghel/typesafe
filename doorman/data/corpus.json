@@ -39,8 +39,8 @@
     "id": "c-verify",
     "sender": "login@metrics.example",
     "senderDomain": "metrics.example",
-    "subject": "Confirm your email to finish setting up Metrics",
-    "bodyText": "Confirm your email to finish creating your account.\n\nConfirm email\n\nThis link expires in 24 hours.",
+    "subject": "Verify your address to activate Metrics",
+    "bodyText": "Your workspace is reserved but stays inactive until the address on it is verified.\n\nVerify address\n\nThe link stops working after 24 hours and a new one has to be requested.",
     "isReplyToRecipient": false,
     "category": "needs_action"
   },
@@ -273,8 +273,8 @@
     "id": "c-promo3",
     "sender": "hello@dataplane.example",
     "senderDomain": "dataplane.example",
-    "subject": "A lot has changed since you last logged in",
-    "bodyText": "Your agent builds it, we run it. Database, ORM and hosting, free to start.",
+    "subject": "Plenty is new since your last visit",
+    "bodyText": "Managed storage, a query planner and hosting in one place. The starter tier is free\nand needs no card.",
     "isReplyToRecipient": false,
     "category": "promotional"
   },
